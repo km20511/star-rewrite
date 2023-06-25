@@ -7,7 +7,7 @@
 ```bash
 python3 -m pip install -r requirements.txt
 ```
-게임을 실행하기 위해서는 게임 폴더 바로 아래의 `main py`를 실행하세요.
+게임을 실행하기 위해서는 게임 폴더 바로 아래의 `main.py`를 실행하세요.
 ```bash
 python3 main.py
 ```
