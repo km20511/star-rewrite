@@ -1,0 +1,42 @@
+{
+    "__comment__": [
+        "게임에 등장하는 아이템들을 다루는 데이터 문서. 이 필드는 주석.",
+        "각 아이템은 이하 contents 필드에 나열되며, 아래의 속성을 가짐.",
+        "id(정수): 도감 번호 같은 개념.",
+        "name(문자열): 게임에 표시되는 이름.",
+        "sprite_name(문자열): 아이템 이미지의 파일명.",
+        "description(문자열): 아이템 하단에 표시될 설명. formatting 기능을 넣을 지는 고민 중.",
+        "effects(배열[효과]): 발동되는 효과의 목록. 각 효과는 외부 파일에 기술된 효과를 참조하는 id거나 직접 구현한 객체로, 직접 구현한 객체의 경우 검사 절차를 거쳐 eval로 실행됨."
+    ],
+    "contents": [
+        {
+            "id": 3,
+            "name": "아르바이트 수행",
+            "sprite_name": "unnamed.png",
+            "description": "사용 시: 3골드를 얻습니다.",
+            "effects": [
+                {
+                    "effect": "modify_value(ValueType.Money, 3)",
+                    "target": "inventory",
+                    "query": "this == target",
+                    "event_type": "on_use"
+                }
+            ]
+        },
+        {
+            "id": 8,
+            "name": "입문자의 목검",
+            "sprite_name": "unnamed.png",
+            "description": "사용 시: 이번 턴에만 공격력을 2 얻습니다.",
+            "effects": [
+                {
+                    "effect": "modify_value(ValueType.Attack, 2)",
+                    "target": "inventory",
+                    "query": "this == target",
+                    "event_type": "on_use"
+                }
+            ]
+        }
+
+    ]
+}

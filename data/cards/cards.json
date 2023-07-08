@@ -1,0 +1,177 @@
+{
+    "__comment__": [
+        "게임에 등장하는 카드들을 다루는 데이터 문서. 이 필드는 주석.",
+        "내부적으로 아이템과는 구분되며, 아이템 목록은 items.json에 따로 기술할 예정.",
+        "각 카드는 이하 contents 필드에 나열되며, 아래의 속성을 가짐.",
+        "id(정수): 도감 번호 같은 개념. 100번대는 적, 200번대는 아이템 획득 카드 및 즉발형 아이템, 300번대는 사건 카드에 할당할 예정.",
+        "name(문자열): 게임에 표시되는 이름.",
+        "type(문자열(enum)): 카드의 유형. Enemy, Item, Event로 구분. (id로도 구분할 수 있지만 확실히 하기 위해...)",
+        "cost(정수): 구매 혹은 처치에 필요한 비용. 적 카드는 이것이 체력으로 작용.",
+        "sprite_name(문자열): 카드 이미지의 파일명.",
+        "description(문자열): 카드 하단에 표시될 설명. formatting 기능을 넣을 지는 고민 중.",
+        "effects(배열[효과]): 발동되는 효과의 목록. 각 효과는 외부 파일에 기술된 효과를 참조하는 id거나 직접 구현한 객체로, 직접 구현한 객체의 경우 검사 절차를 거쳐 eval로 실행됨.",
+        "[고민 중] attributes(문자열): 카드가 가지는 종족값 따위. 예: 오크, 금속, 해적 등"
+    ],
+    "contents": [
+        {
+            "id": 101,
+            "name": "소형 슬라임",
+            "type": "Enemy",
+            "cost": 1,
+            "sprite_name": "slime_small.png",
+            "description": "처치 보상: 1골드",
+            "effects": [
+                {
+                    "effect": "modify_value(value_type = ValueType.Money, amount = 1)",
+                    "target": "executer",
+                    "event_type": "on_bought"
+                }
+            ]
+        },
+        {
+            "id": 102,
+            "name": "중형 슬라임",
+            "type": "Enemy",
+            "cost": 3,
+            "sprite_name": "slime_middle.png",
+            "description": "처치 보상: 3골드",
+            "effects": [
+                {
+                    "effect": "modify_value(value_type = ValueType.Money, amount = 3)",
+                    "target": "executer",
+                    "event_type": "on_bought"
+                }
+            ]
+        },
+        {
+            "id": 103,
+            "name": "대형 슬라임",
+            "type": "Enemy",
+            "cost": 4,
+            "sprite_name": "slime_large.png",
+            "description": "처치 보상: 3골드\n처치 시 소형 슬라임을 둘 소환합니다.",
+            "effects": [
+                {
+                    "effect": "modify_value(value_type = ValueType.Money, amount = 3)",
+                    "target": "executer",
+                    "event_type": "on_bought"
+                },
+                {
+                    "effect": "insert_card(id = 101, amount = 2)",
+                    "target": "executer",
+                    "event_type": "on_bought"
+                }
+            ]
+        },
+        {
+            "id": 117,
+            "name": "과장된 존재",
+            "type": "Enemy",
+            "cost": 20,
+            "sprite_name": "the_exaggerated.png",
+            "description": "처치 보상: 3골드\n이 카드의 체력은 플레이어와의 거리에 비례합니다.",
+            "effects": [
+                {
+                    "effect": "modify_value(value_type = ValueType.Money, amount = 3)",
+                    "target": "executer",
+                    "event_type": "on_bought"
+                },
+                {
+                    "effect": "set_value(value_type = ValueType.Cost, amount = abs(this.index) * 2)",
+                    "target": "executer",
+                    "event_type": "on_deck_modified"
+                }
+            ]
+        },
+        {
+            "id": 203,
+            "name": "구인 포스터",
+            "type": "Item",
+            "cost": 3,
+            "sprite_name": "job_ad_poster.png",
+            "description": "구매 시: '아르바이트 수행'을 얻습니다.",
+            "effects": [
+                {
+                    "effect": "add_item(id = 3, amount = 1)",
+                    "target": "executer",
+                    "event_type": "on_bought"
+                }
+            ]
+        },
+        {
+            "id": 220,
+            "name": "작은 우물",
+            "type": "Item",
+            "cost": 3,
+            "sprite_name": "tiny_well.png",
+            "description": "구매 시: 체력을 6 얻습니다.",
+            "effects": [
+                {
+                    "effect": "modify_value(value_type = ValueType.Health, amount = 6)",
+                    "target": "executer",
+                    "event_type": "on_bought"
+                }
+            ]
+        },
+        {
+            "id": 225,
+            "name": "소원의 석상",
+            "type": "Item",
+            "cost": 7,
+            "sprite_name": "statue_of_wish.png",
+            "description": "구매 시: 공개된 적 카드 하나당 공격력을 3 얻고\n체력이 3 이하라면 체력을 6 얻습니다.",
+            "effects": [
+                {
+                    "effect": "modify_value(value_type = ValueType.Attack, amount = 3)",
+                    "target": "deck",
+                    "query": "type == CardType.Enemy && this.is_front",
+                    "event_type": "on_bought"
+                },
+                {
+                    "effect": "modify_value(value_type = ValueType.Health, amount = 6)",
+                    "target": "executer",
+                    "query": "game_state.health <= 3",
+                    "event_type": "on_bought"
+                }
+            ]
+        },
+        {
+            "id": 305,
+            "name": "친절한 할아버지",
+            "type": "Event",
+            "cost": 0,
+            "sprite_name": "unnamed.png",
+            "description": "『바깥은 혼자 돌아다니기 위험하단다.\n이 목검을 가져가렴.』",
+            "effects": [
+                {
+                    "effect": "add_item(id = 8, amount = 1)",
+                    "target": "executer",
+                    "event_type": "on_bought"
+                }
+            ]
+        },
+        {
+            "id": 323,
+            "name": "광역 지뢰",
+            "type": "Event",
+            "cost": 0,
+            "sprite_name": "unnamed.png",
+            "description": "플레이어 및 이 카드와 제일 가까운 공개된 적 둘에게 피해를 3 줍니다.",
+            "effects": [
+                {
+                    "effect": "modify_value(value_type = ValueType.Health, amount = -3)",
+                    "target": "executer",
+                    "event_type": "on_bought"
+                },
+                {
+                    "effect": "modify_value(value_type = ValueType.Cost, amount = -3)",
+                    "target": "deck",
+                    "query": "this.type == CardType.Enemy && this.is_front",
+                    "order_by": {"value": "distance(this, executer)", "from": 2},
+                    "event_type": "on_bought"
+                }
+            ]
+        }
+
+    ]
+}
