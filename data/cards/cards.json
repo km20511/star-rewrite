@@ -23,7 +23,7 @@
             "effects": [
                 {
                     "effect": "modify_value(value_type = ValueType.Money, amount = 1)",
-                    "target": "executer",
+                    "target": "Executer",
                     "event_type": "on_bought"
                 }
             ]
@@ -38,7 +38,7 @@
             "effects": [
                 {
                     "effect": "modify_value(value_type = ValueType.Money, amount = 3)",
-                    "target": "executer",
+                    "target": "Executer",
                     "event_type": "on_bought"
                 }
             ]
@@ -53,12 +53,12 @@
             "effects": [
                 {
                     "effect": "modify_value(value_type = ValueType.Money, amount = 3)",
-                    "target": "executer",
+                    "target": "Executer",
                     "event_type": "on_bought"
                 },
                 {
                     "effect": "insert_card(id = 101, amount = 2)",
-                    "target": "executer",
+                    "target": "Executer",
                     "event_type": "on_bought"
                 }
             ]
@@ -73,12 +73,12 @@
             "effects": [
                 {
                     "effect": "modify_value(value_type = ValueType.Money, amount = 3)",
-                    "target": "executer",
+                    "target": "Executer",
                     "event_type": "on_bought"
                 },
                 {
                     "effect": "set_value(value_type = ValueType.Cost, amount = abs(this.index) * 2)",
-                    "target": "executer",
+                    "target": "Executer",
                     "event_type": "on_deck_modified"
                 }
             ]
@@ -93,7 +93,7 @@
             "effects": [
                 {
                     "effect": "add_item(id = 3, amount = 1)",
-                    "target": "executer",
+                    "target": "Executer",
                     "event_type": "on_bought"
                 }
             ]
@@ -108,7 +108,7 @@
             "effects": [
                 {
                     "effect": "modify_value(value_type = ValueType.Health, amount = 6)",
-                    "target": "executer",
+                    "target": "Executer",
                     "event_type": "on_bought"
                 }
             ]
@@ -123,13 +123,13 @@
             "effects": [
                 {
                     "effect": "modify_value(value_type = ValueType.Attack, amount = 3)",
-                    "target": "deck",
+                    "target": "Deck",
                     "query": "type == CardType.Enemy && this.is_front",
                     "event_type": "on_bought"
                 },
                 {
                     "effect": "modify_value(value_type = ValueType.Health, amount = 6)",
-                    "target": "executer",
+                    "target": "Executer",
                     "query": "game_state.health <= 3",
                     "event_type": "on_bought"
                 }
@@ -145,7 +145,7 @@
             "effects": [
                 {
                     "effect": "add_item(id = 8, amount = 1)",
-                    "target": "executer",
+                    "target": "Executer",
                     "event_type": "on_bought"
                 }
             ]
@@ -160,14 +160,14 @@
             "effects": [
                 {
                     "effect": "modify_value(value_type = ValueType.Health, amount = -3)",
-                    "target": "executer",
+                    "target": "Executer",
                     "event_type": "on_bought"
                 },
                 {
                     "effect": "modify_value(value_type = ValueType.Cost, amount = -3)",
-                    "target": "deck",
+                    "target": "Deck",
                     "query": "this.type == CardType.Enemy && this.is_front",
-                    "order_by": {"value": "distance(this, executer)", "from": 2},
+                    "order_by": {"value": "distance(this, executer)", "crop": 2},
                     "event_type": "on_bought"
                 }
             ]

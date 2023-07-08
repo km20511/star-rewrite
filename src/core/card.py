@@ -1,5 +1,6 @@
-import uuid
+import effect
 from enum import Enum
+from typing import List
 from dataclasses import dataclass
 
 
@@ -18,9 +19,10 @@ class CardData():
     description: str
 
 
-class Card():
-    # json db에서 불러올 수 있을 것.
-    def __init__(self, card_data: CardData):
-        self.__id: int = uuid.uuid4().int
-        self.__card_data = __card_data
+class Card(effect.EffectHolder):
+    """
+    덱에 존재하는 카드 클래스.
+    """
+    def __init__(self, effects: List[effect.Effect] = []):
+        super().__init__(effects)
 

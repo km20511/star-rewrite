@@ -17,8 +17,7 @@
             "effects": [
                 {
                     "effect": "modify_value(ValueType.Money, 3)",
-                    "target": "inventory",
-                    "query": "this == target",
+                    "target": "Executer",
                     "event_type": "on_use"
                 }
             ]
@@ -31,8 +30,7 @@
             "effects": [
                 {
                     "effect": "modify_value(ValueType.Attack, 2)",
-                    "target": "inventory",
-                    "query": "this == target",
+                    "target": "Executer",
                     "event_type": "on_use"
                 }
             ]
