@@ -3,7 +3,7 @@
 """
 import json
 from enum import Enum
-from typing import List
+from typing import List, Dict
 from dataclasses import dataclass
 
 
@@ -42,10 +42,10 @@ CARDS_DATA_PATH = "data/cards/cards.json"
 ITEMS_DATA_PATH = "data/cards/items.json"
 """아이템 데이터 파일의 경로. 상수이므로 수정하지 말 것."""
 
-__db_cards: List[CardData] = []
+__db_cards: Dict[int, CardData] = {}
 """등록된 카드 데이터의 목록. 외부에서 접근하지 말 것. (대신 get_card_data()를 사용할 것.)"""
 
-__db_items: List[ItemData] = []
+__db_items: Dict[int, ItemData] = {}
 """등록된 아이템 데이터의 목록. 외부에서 접근하지 말 것. (대신 get_item_data()를 사용할 것.)"""
 
 def initialize():
@@ -57,7 +57,7 @@ def initialize():
         tree_cards: dict = json.load(f)
 
     for card in tree_cards["contents"]:
-        __db_cards.append(CardData(
+        __db_cards[card["id"]] = CardData(
             card["id"],
             card["name"],
             CardType[card["type"]],
@@ -65,33 +65,27 @@ def initialize():
             card["sprite_name"],
             card["description"],
             card["effects"]
-        ))
+        )
 
     with open(ITEMS_DATA_PATH, encoding = "utf-8") as f:
         tree_items: dict = json.load(f)
     
     for item in tree_items["contents"]:
-        __db_items.append(ItemData(
+        __db_items[item["id"]] = ItemData(
             item["id"],
             item["name"],
             item["sprite_name"],
             item["description"],
             item["effects"]
-        ))
+        )
 
 def get_card_data(id: int) -> CardData:
     """DB에서 주어진 id에 해당하는 카드를 찾아 반환. 찾지 못할 경우 None 반환."""
-    for i in __db_cards:
-        if i.id == id:
-            return i
-    return None
+    return __db_cards.get(id, None)
 
 def get_item_data(id: int) -> ItemData:
     """DB에서 주어진 id에 해당하는 아이템을 찾아 반환. 찾지 못할 경우 None 반환."""
-    for i in __db_items:
-        if i.id == id:
-            return i
-    return None
+    return __db_items.get(id, None)
 
 if __name__ == "__main__":
     initialize()
