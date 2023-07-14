@@ -1,7 +1,7 @@
 """
 게임 내 덱을 관리하는 스크립트.
 """
-from card import Card
+from .card import Card
 from typing import List, Callable
 from random import shuffle
 
@@ -29,9 +29,12 @@ class Deck:
         """조건에 맞는 카드를 서로 섞음."""
         mask: List[bool] = [query(i) for i in self.__deck]
         target: List[Card] = [card for ind, card in enumerate(self.__deck) if mask[ind]]
-        shuffle(target)
-        result: List[Card] = [(target.pop(0) if mask[ind] else card) for ind, card in enumerate(self.__deck)]
+        shuffled_target: List[Card] = target.copy()
+        while target == shuffled_target: # 같은 배열로 섞이는 것 방지
+            shuffle(shuffled_target)
+        result: List[Card] = [(shuffled_target.pop(0) if mask[ind] else card) for ind, card in enumerate(self.__deck)]
         self.__deck = result 
+        self.update_index(init = False)
 
     def shift_cards(self, shift:int, query: Callable[[Card], bool] = None):
         """조건에 맞는 카드를 주어진 수만큼 이동시킴."""
@@ -62,3 +65,15 @@ class Deck:
         
         result: List[Card] = [(target.pop(0) if i in index_table else non_target.pop(0)) for i in range(len(self.__deck))]
         self.__deck = result
+        self.update_index(init = False)
+
+    def print_table(self, query: Callable[[Card], bool] = None, header: bool = True) -> str:
+        """
+        조건에 맞는 카드들의 정보를 표 양식의 문자열로 반환.
+        열 구성: 순번, 이름, 유형, 현재 인덱스, 이전 인덱스, 비용
+        """
+        result: str = "(순번, 이름, 유형, 현재 위치, 이전 위치, 비용)\n" if header else ""
+        for ind, card in enumerate(filter(query, self.__deck) if query is not None else self.__deck):
+            result += f"{ind:>2d} {card.card_data.name:20s}\t{card.card_data.type.name:>5s} {card.current_index:>2d} {card.previous_index:>2d} {f'*{card.modified_cost}*' if card.modified_cost != card.card_data.cost else f'{card.modified_cost}':>4s}\n"
+        return result.strip()
+        

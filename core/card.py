@@ -1,5 +1,5 @@
-import effect
-import card_data_manager as card_data
+from . import effect
+from . import card_data_manager as card_data
 
 
 class Card(effect.EffectHolder):
@@ -16,6 +16,9 @@ class Card(effect.EffectHolder):
         self.__previous_index = index
         self.__modified_cost = data.cost
         super().__init__(data.effects)
+
+    def __repr__(self) -> str:
+        return f"Card {{ '{self.__card_data.name} [{self.__card_data.type.name}]' ({f'*{self.modified_cost}*' if self.modified_cost != self.__card_data.cost else self.modified_cost})}}"
 
     @property
     def card_data(self):
@@ -34,7 +37,7 @@ class Card(effect.EffectHolder):
         return self.__modified_cost
 
     @modified_cost.setter
-    def modified_cost_setter(self, cost: int):
+    def modified_cost(self, cost: int):
         self.__modified_cost = cost if cost >= 0 else 0
     
     def set_index(self, index: int, init: bool = False):

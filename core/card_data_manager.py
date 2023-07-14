@@ -87,5 +87,13 @@ def get_item_data(id: int) -> ItemData:
     """DB에서 주어진 id에 해당하는 아이템을 찾아 반환. 찾지 못할 경우 None 반환."""
     return __db_items.get(id, None)
 
+def all_cards() -> List[CardData]:
+    """불러온 모든 카드 데이터 목록을 반환"""
+    return __db_cards.copy()
+
+def all_items() -> List[ItemData]:
+    """불러온 모든 아이템 데이터 목록을 반환"""
+    return __db_items.copy()
+
 if __name__ == "__main__":
     initialize()
