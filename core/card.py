@@ -1,12 +1,12 @@
 from . import effect
-from . import card_data_manager as card_data
+from . import card_data_manager as cdm
 
 
 class Card(effect.EffectHolder):
     """
     덱에 존재하는 카드 클래스.
     """
-    def __init__(self, data: card_data.CardData, index:int = -1):
+    def __init__(self, data: cdm.CardData, index:int = -1):
         """
         :param data: 이 카드에 표시되는 데이터.
         :param index: 이 카드가 덱에서 존재하는 위치. *실제 위치와 동일해야 함. 수시로 갱신해 동기화할 것.*
@@ -15,7 +15,7 @@ class Card(effect.EffectHolder):
         self.__current_index = index
         self.__previous_index = index
         self.__modified_cost = data.cost
-        super().__init__(data.effects)
+        super().__init__([effect.Effect.from_json_dict(self, tree) for tree in data.effects])
 
     def __repr__(self) -> str:
         return f"Card {{ '{self.__card_data.name} [{self.__card_data.type.name}]' ({f'*{self.modified_cost}*' if self.modified_cost != self.__card_data.cost else self.modified_cost})}}"

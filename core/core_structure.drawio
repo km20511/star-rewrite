@@ -1,0 +1,252 @@
+<mxfile host="65bd71144e">
+    <diagram id="jv4HWvHOGxTuTFB8GUG6" name="core_class_diagram">
+        <mxGraphModel dx="750" dy="420" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="2" value="&lt;font data-font-src=&quot;https://fonts.googleapis.com/css?family=Architects+Daughter&quot; face=&quot;Architects Daughter&quot;&gt;Card&lt;/font&gt;" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="1" vertex="1">
+                    <mxGeometry x="410" y="511" width="180" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="&amp;nbsp;덱에 존재하는 카드." style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="2" vertex="1">
+                    <mxGeometry y="30" width="180" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="4" value="+&amp;nbsp; card_data :CardData&amp;nbsp; {get}&lt;br&gt;+&amp;nbsp; current_index :int&amp;nbsp; {get}&lt;br&gt;+&amp;nbsp; previous_index :int&amp;nbsp; {get}&lt;br&gt;+&amp;nbsp; modified_cost :int&amp;nbsp; {get/set}&lt;br&gt;&lt;font color=&quot;#2d7600&quot;&gt;+&amp;nbsp; is_front_face :bool&amp;nbsp; {get/set}&lt;/font&gt;" style="text;strokeColor=default;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="2" vertex="1">
+                    <mxGeometry y="60" width="180" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="+ set_index(int, bool) :void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="2" vertex="1">
+                    <mxGeometry y="150" width="180" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="&lt;font data-font-src=&quot;https://fonts.googleapis.com/css?family=Architects+Daughter&quot; face=&quot;Architects Daughter&quot;&gt;Item&lt;/font&gt;" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="1" vertex="1">
+                    <mxGeometry x="646" y="511" width="184" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="7" value="인벤토리에 존재하는 아이템." style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="6" vertex="1">
+                    <mxGeometry y="30" width="184" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="+&amp;nbsp; item_data :ItemData {get}" style="text;strokeColor=default;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="6" vertex="1">
+                    <mxGeometry y="60" width="184" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="9" value="Item 3" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="6" vertex="1">
+                    <mxGeometry y="90" width="184" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="&lt;font data-font-src=&quot;https://fonts.googleapis.com/css?family=Architects+Daughter&quot; face=&quot;Architects Daughter&quot;&gt;EffectHolder&lt;/font&gt;" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="1" vertex="1">
+                    <mxGeometry x="510" y="300" width="218" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="11" value="&amp;nbsp;효과를 소유하고 있는 주체." style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="10" vertex="1">
+                    <mxGeometry y="30" width="218" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="12" value="&amp;nbsp;-&amp;nbsp; __effects :List[Effect]" style="text;strokeColor=default;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="10" vertex="1">
+                    <mxGeometry y="60" width="218" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="13" value="&amp;nbsp;+&amp;nbsp; add_effect(Effect) :void&lt;br&gt;&amp;nbsp;+&amp;nbsp; has_effect(Effect) :bool&lt;br&gt;&amp;nbsp;+&amp;nbsp; remove_effect(Effect) :void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="10" vertex="1">
+                    <mxGeometry y="90" width="218" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="15" value="" style="endArrow=block;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.501;entryY=1.01;entryDx=0;entryDy=0;entryPerimeter=0;endFill=0;strokeWidth=1;sketch=1;curveFitting=1;jiggle=2;rounded=0;edgeStyle=orthogonalEdgeStyle;endSize=8;" parent="1" source="2" target="13" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="500" y="511" as="sourcePoint"/>
+                        <mxPoint x="718" y="541" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="16" value="" style="endArrow=block;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;endFill=0;strokeWidth=1;entryX=0.501;entryY=1.01;entryDx=0;entryDy=0;entryPerimeter=0;sketch=1;curveFitting=1;jiggle=2;rounded=0;edgeStyle=orthogonalEdgeStyle;endSize=8;" parent="1" source="6" target="13" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="490" y="521" as="sourcePoint"/>
+                        <mxPoint x="558" y="471" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="17" value="&lt;h1&gt;Core Structure&lt;/h1&gt;&lt;p&gt;core 폴더 내 스크립트의 구조를 클래스 다이어그램으로 표현함. 덱과 인벤토리, 카드 효과 등 게임 로직의 핵심적인 부분을 담당.&lt;/p&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacing=5;spacingTop=-20;whiteSpace=wrap;overflow=hidden;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="41" width="290" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="18" value="&lt;font style=&quot;&quot; data-font-src=&quot;https://fonts.googleapis.com/css?family=Architects+Daughter&quot; face=&quot;Architects Daughter&quot;&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;&amp;lt;&amp;lt; module &amp;gt;&amp;gt;&lt;/font&gt;&lt;br&gt;card_data_manager&lt;/font&gt;" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="1" vertex="1">
+                    <mxGeometry x="100" y="270" width="223" height="210" as="geometry">
+                        <mxRectangle x="41" y="720" width="150" height="40" as="alternateBounds"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="19" value="Json 파일에 접근해 카드와 아이템 데이터를 파싱하고 제공함." style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="18" vertex="1">
+                    <mxGeometry y="40" width="223" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="20" value="+&amp;nbsp; CARDS_DATA_PATH :str {const}&lt;br&gt;+&amp;nbsp; ITEMS_DATA_PATH: str {const}" style="text;strokeColor=default;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="18" vertex="1">
+                    <mxGeometry y="80" width="223" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="21" value="+&amp;nbsp; initialize() :void&lt;br&gt;+&amp;nbsp; get_card_data(int) :CardData&lt;br&gt;+&amp;nbsp; get_item_data(int) :ItemData&lt;br&gt;+&amp;nbsp; all_cards() :List[CardData]&lt;br&gt;+&amp;nbsp; all_items() :List[ItemData]" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="18" vertex="1">
+                    <mxGeometry y="120" width="223" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="22" value="&lt;font data-font-src=&quot;https://fonts.googleapis.com/css?family=Architects+Daughter&quot; face=&quot;Architects Daughter&quot;&gt;Deck&lt;/font&gt;" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="1" vertex="1">
+                    <mxGeometry x="100" y="511" width="280" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="23" value="덱의 카드를 관리." style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="22" vertex="1">
+                    <mxGeometry y="30" width="280" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="24" value="-&amp;nbsp; __deck :List[Card]" style="text;strokeColor=default;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="22" vertex="1">
+                    <mxGeometry y="60" width="280" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="25" value="+&amp;nbsp; update_index(bool) :void&lt;br&gt;+&amp;nbsp; get_cards(Callable[[Card],bool]) :List[Card]&lt;br&gt;+&amp;nbsp; shullfe_cards(Callable[[Card],bool]) :List[Card]&lt;br&gt;+&amp;nbsp; shift_cards(int, Callable[[Card].bool]) :List[Card]&lt;br&gt;+&amp;nbsp; print_table(Callable[[Card], bool]) :str" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="22" vertex="1">
+                    <mxGeometry y="90" width="280" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="26" value="&lt;font data-font-src=&quot;https://fonts.googleapis.com/css?family=Architects+Daughter&quot; face=&quot;Architects Daughter&quot;&gt;Effect&lt;/font&gt;" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="1" vertex="1">
+                    <mxGeometry x="830" y="300" width="220" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="27" value="카드, 아이템 등에 존재하는 효과." style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="26" vertex="1">
+                    <mxGeometry y="30" width="220" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="28" value="+&amp;nbsp; owner :EffectHolder&amp;nbsp; {get}&lt;br&gt;+&amp;nbsp; effect_data :EffectData&amp;nbsp; {get}" style="text;strokeColor=default;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="26" vertex="1">
+                    <mxGeometry y="70" width="220" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="29" value="+&amp;nbsp; from_json_dict(dict) :Effect&amp;nbsp; {static}" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="26" vertex="1">
+                    <mxGeometry y="120" width="220" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="30" value="&lt;font data-font-src=&quot;https://fonts.googleapis.com/css?family=Architects+Daughter&quot; face=&quot;Architects Daughter&quot;&gt;EventManager&lt;/font&gt;" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="1" vertex="1">
+                    <mxGeometry x="720" y="80" width="330" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="31" value="게임 내 이벤트 호출 관리." style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="30" vertex="1">
+                    <mxGeometry y="30" width="330" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="32" value="-&amp;nbsp; __on_*_listeners :List[EventHandler] (각 이벤트에 대한 구독자 목록. 이벤트 목록은 EventType 참고.)&lt;br&gt;-&amp;nbsp; __listeners_table :Dict[EventType, List[EventHandler]]&lt;br&gt;-&amp;nbsp; __event_queue :List[Callable[[],None]" style="text;strokeColor=default;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="30" vertex="1">
+                    <mxGeometry y="60" width="330" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="33" value="+&amp;nbsp; add_listener(EventHandler) :void&lt;br&gt;+&amp;nbsp; remove_listener(EventHandler) :void&lt;br&gt;+&amp;nbsp; clear_listeners(EventType) :void&lt;br&gt;+&amp;nbsp; on_*(*args, bool) :void&amp;nbsp; (각 이벤트를 발동시키는 함수들.)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="30" vertex="1">
+                    <mxGeometry y="130" width="330" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="34" value="&lt;font data-font-src=&quot;https://fonts.googleapis.com/css?family=Architects+Daughter&quot; face=&quot;Architects Daughter&quot;&gt;&lt;span style=&quot;font-size: 10px;&quot;&gt;&amp;lt;&amp;lt; dataclass &amp;gt;&amp;gt;&lt;/span&gt;&lt;br&gt;CardData&lt;/font&gt;" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="921" width="180" height="190" as="geometry"/>
+                </mxCell>
+                <mxCell id="35" value="카드의 속성을 담는 자료구조." style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="34" vertex="1">
+                    <mxGeometry y="40" width="180" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="36" value="+&amp;nbsp; id :int&lt;br&gt;+&amp;nbsp; name :str&lt;br&gt;+&amp;nbsp; type: CardType&lt;br&gt;+&amp;nbsp; cost :int&lt;br&gt;+&amp;nbsp; sprite_name :str&lt;br&gt;+&amp;nbsp; description :str&lt;br&gt;+&amp;nbsp; effects :List[EffectData]" style="text;strokeColor=default;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="34" vertex="1">
+                    <mxGeometry y="70" width="180" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="38" value="&lt;font data-font-src=&quot;https://fonts.googleapis.com/css?family=Architects+Daughter&quot; face=&quot;Architects Daughter&quot;&gt;&lt;span style=&quot;font-size: 10px;&quot;&gt;&amp;lt;&amp;lt; dataclass &amp;gt;&amp;gt;&lt;/span&gt;&lt;br&gt;ItemData&lt;/font&gt;" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="1" vertex="1">
+                    <mxGeometry x="227" y="921" width="180" height="160" as="geometry"/>
+                </mxCell>
+                <mxCell id="39" value="아이템의 속성을 담는 자료구조." style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="38" vertex="1">
+                    <mxGeometry y="40" width="180" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="40" value="+&amp;nbsp; id :int&lt;br&gt;+&amp;nbsp; name :str&lt;br&gt;+&amp;nbsp; sprite_name :str&lt;br&gt;+&amp;nbsp; description :str&lt;br&gt;+&amp;nbsp; effects :List[EffectData]" style="text;strokeColor=default;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="38" vertex="1">
+                    <mxGeometry y="70" width="180" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="46" value="&lt;span style=&quot;font-family: &amp;quot;Architects Daughter&amp;quot;; font-size: 10px;&quot;&gt;&amp;lt;&amp;lt; dataclass &amp;gt;&amp;gt;&lt;/span&gt;&lt;font face=&quot;Architects Daughter&quot;&gt;&lt;br&gt;EffectData&lt;/font&gt;" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;fillColor=#60a917;fontColor=#ffffff;strokeColor=#2D7600;" parent="1" vertex="1">
+                    <mxGeometry x="414" y="921" width="180" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="47" value="효과의 속성을 담는 자료구조." style="text;strokeColor=#2D7600;fillColor=#60a917;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;fontColor=#ffffff;" parent="46" vertex="1">
+                    <mxGeometry y="40" width="180" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="48" value="+&amp;nbsp; effect :str&lt;br&gt;+&amp;nbsp; effect_target :EffectTarget&lt;br&gt;+&amp;nbsp; query :str&lt;br&gt;+&amp;nbsp; order_method :str&lt;br&gt;+&amp;nbsp; order_crop :int" style="text;strokeColor=#2D7600;fillColor=#60a917;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;fontColor=#ffffff;" parent="46" vertex="1">
+                    <mxGeometry y="70" width="180" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="49" value="&lt;font data-font-src=&quot;https://fonts.googleapis.com/css?family=Architects+Daughter&quot; face=&quot;Architects Daughter&quot;&gt;EventHandler&lt;/font&gt;" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="1" vertex="1">
+                    <mxGeometry x="1190" y="140" width="290" height="140" as="geometry"/>
+                </mxCell>
+                <mxCell id="50" value="EventManager에서 관리하고 호출하는 이벤트 객체. 실제로는 인수 개수에 따라 분화되어 있음." style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="49" vertex="1">
+                    <mxGeometry y="30" width="290" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="51" value="+&amp;nbsp; owner :Effect&amp;nbsp; {get}&lt;br&gt;-&amp;nbsp; __listener :Callable[[*],None]" style="text;strokeColor=default;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="49" vertex="1">
+                    <mxGeometry y="70" width="290" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="52" value="+&amp;nbsp; invoke(*) :void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="49" vertex="1">
+                    <mxGeometry y="110" width="290" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="53" value="&lt;font style=&quot;&quot; data-font-src=&quot;https://fonts.googleapis.com/css?family=Architects+Daughter&quot; face=&quot;Architects Daughter&quot;&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;&amp;lt;&amp;lt; enum &amp;gt;&amp;gt;&lt;/font&gt;&lt;br&gt;CardType&lt;/font&gt;" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="1" vertex="1">
+                    <mxGeometry x="760" y="921" width="120" height="130" as="geometry">
+                        <mxRectangle x="41" y="720" width="150" height="40" as="alternateBounds"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="54" value="카드의 유형." style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="53" vertex="1">
+                    <mxGeometry y="40" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="55" value="+&amp;nbsp; Enemy&lt;br&gt;+&amp;nbsp; Item&lt;br&gt;+&amp;nbsp; Event" style="text;strokeColor=default;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="53" vertex="1">
+                    <mxGeometry y="70" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="57" value="&lt;font style=&quot;&quot; data-font-src=&quot;https://fonts.googleapis.com/css?family=Architects+Daughter&quot; face=&quot;Architects Daughter&quot;&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;&amp;lt;&amp;lt; enum &amp;gt;&amp;gt;&lt;/font&gt;&lt;br&gt;EffectTarget&lt;/font&gt;" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="1" vertex="1">
+                    <mxGeometry x="890" y="921" width="120" height="140" as="geometry">
+                        <mxRectangle x="41" y="720" width="150" height="40" as="alternateBounds"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="58" value="효과 적용 대상." style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="57" vertex="1">
+                    <mxGeometry y="40" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="59" value="+&amp;nbsp; Executer&lt;br&gt;+&amp;nbsp; Deck&lt;br&gt;+&amp;nbsp; Inventory&lt;br&gt;+&amp;nbsp; All" style="text;strokeColor=default;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="57" vertex="1">
+                    <mxGeometry y="70" width="120" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="60" value="&lt;font style=&quot;&quot; data-font-src=&quot;https://fonts.googleapis.com/css?family=Architects+Daughter&quot; face=&quot;Architects Daughter&quot;&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;&amp;lt;&amp;lt; enum &amp;gt;&amp;gt;&lt;/font&gt;&lt;br&gt;EventType&lt;/font&gt;" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="1" vertex="1">
+                    <mxGeometry x="1020" y="921" width="160" height="230" as="geometry">
+                        <mxRectangle x="41" y="720" width="150" height="40" as="alternateBounds"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="61" value="이벤트 유형." style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="60" vertex="1">
+                    <mxGeometry y="40" width="160" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="62" value="+&amp;nbsp; OnShown&lt;br&gt;+&amp;nbsp; OnEntered&lt;br&gt;+&amp;nbsp; OnPurchased&lt;br&gt;+&amp;nbsp; OnUsed&lt;br&gt;+&amp;nbsp; OnDestroyed&lt;br&gt;+&amp;nbsp; OnPlayerStatChanged&lt;br&gt;+&amp;nbsp; OnTurnBegin&lt;br&gt;+&amp;nbsp; OnTurnEnd&lt;br&gt;+&amp;nbsp; OnCardCostChanged&lt;br&gt;+&amp;nbsp; OnCardMoved" style="text;strokeColor=default;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" parent="60" vertex="1">
+                    <mxGeometry y="70" width="160" height="160" as="geometry"/>
+                </mxCell>
+                <mxCell id="63" style="edgeStyle=orthogonalEdgeStyle;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.102;entryDx=0;entryDy=0;entryPerimeter=0;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fontSize=16;endArrow=block;endFill=1;strokeWidth=1;curved=1;" edge="1" parent="1" source="12" target="26">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="65" style="edgeStyle=orthogonalEdgeStyle;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.001;entryY=0.067;entryDx=0;entryDy=0;entryPerimeter=0;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fontSize=16;endArrow=block;endFill=1;strokeWidth=1;curved=1;" edge="1" parent="1" source="24" target="2">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="487" y="622" as="sourcePoint"/>
+                        <mxPoint x="654" y="562.3" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="66" style="edgeStyle=orthogonalEdgeStyle;curved=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.001;entryY=0.103;entryDx=0;entryDy=0;entryPerimeter=0;strokeWidth=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fontSize=16;endArrow=block;endFill=1;" edge="1" parent="1" source="28" target="49">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="68" style="edgeStyle=orthogonalEdgeStyle;curved=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;html=1;exitX=0.55;exitY=0.95;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fontSize=15;endArrow=block;endFill=1;" edge="1" parent="1" source="67" target="49">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="67" value="&lt;font style=&quot;font-size: 15px;&quot;&gt;Event 같은 걸로 이름 바꿔야 할까...?&lt;/font&gt;" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fontSize=20;spacingTop=0;spacingLeft=10;spacingRight=10;" vertex="1" parent="1">
+                    <mxGeometry x="1150" width="190" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="70" style="edgeStyle=orthogonalEdgeStyle;curved=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;html=1;exitX=0.875;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=-0.009;entryY=0.809;entryDx=0;entryDy=0;entryPerimeter=0;strokeWidth=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fontSize=15;endArrow=block;endFill=1;" edge="1" parent="1" source="69" target="33">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="69" value="&lt;font style=&quot;font-size: 15px;&quot;&gt;비슷한 메소드가 너무 많아...&lt;/font&gt;" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fontSize=20;spacingTop=0;spacingLeft=10;spacingRight=10;" vertex="1" parent="1">
+                    <mxGeometry x="450" y="105" width="150" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="72" style="edgeStyle=orthogonalEdgeStyle;curved=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.005;entryY=0.103;entryDx=0;entryDy=0;entryPerimeter=0;strokeWidth=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fontSize=15;endArrow=block;endFill=1;" edge="1" parent="1" source="33" target="49">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="73" value="&lt;font color=&quot;#2d7600&quot;&gt;초록색&lt;/font&gt;은 아직 구현되지 않은 기획임." style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=12;fontFamily=Architects Daughter;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;" vertex="1" parent="1">
+                    <mxGeometry x="40" y="140" width="220" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="74" value="&lt;font face=&quot;Architects Daughter&quot;&gt;Inventory&lt;/font&gt;" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;fillColor=#60a917;fontColor=#ffffff;strokeColor=#2D7600;" vertex="1" parent="1">
+                    <mxGeometry x="336" y="710" width="254" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="75" value="인벤토리의 아이템을 관리." style="text;strokeColor=#2D7600;fillColor=#60a917;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;fontColor=#ffffff;" vertex="1" parent="74">
+                    <mxGeometry y="30" width="254" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="76" value="-&amp;nbsp; __inventory :List[Item]" style="text;strokeColor=#2D7600;fillColor=#60a917;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;fontColor=#ffffff;" vertex="1" parent="74">
+                    <mxGeometry y="60" width="254" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="77" value="+&amp;nbsp; get_items(Callable[[Item],bool])&amp;nbsp; :List[Item]&lt;br&gt;+&amp;nbsp; use_item(int)&amp;nbsp; :void&lt;br&gt;+&amp;nbsp; print_table(Callable[[Item,bool])&amp;nbsp; :str" style="text;strokeColor=#2D7600;fillColor=#60a917;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;fontColor=#ffffff;" vertex="1" parent="74">
+                    <mxGeometry y="90" width="254" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="78" style="edgeStyle=orthogonalEdgeStyle;curved=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.002;entryY=0.112;entryDx=0;entryDy=0;entryPerimeter=0;strokeWidth=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fontSize=12;fontColor=#2d7600;endArrow=block;endFill=1;" edge="1" parent="1" source="76" target="6">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="82" value="&lt;font data-font-src=&quot;https://fonts.googleapis.com/css?family=Architects+Daughter&quot; face=&quot;Architects Daughter&quot;&gt;GameManager&lt;/font&gt;" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" vertex="1" parent="1">
+                    <mxGeometry x="1080" y="471" width="330" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="83" value="게임 내 이벤트 호출 관리." style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" vertex="1" parent="82">
+                    <mxGeometry y="30" width="330" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="84" value="-&amp;nbsp; __on_*_listeners :List[EventHandler] (각 이벤트에 대한 구독자 목록. 이벤트 목록은 EventType 참고.)&lt;br&gt;-&amp;nbsp; __listeners_table :Dict[EventType, List[EventHandler]]&lt;br&gt;-&amp;nbsp; __event_queue :List[Callable[[],None]" style="text;strokeColor=default;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" vertex="1" parent="82">
+                    <mxGeometry y="60" width="330" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="85" value="+&amp;nbsp; add_listener(EventHandler) :void&lt;br&gt;+&amp;nbsp; remove_listener(EventHandler) :void&lt;br&gt;+&amp;nbsp; clear_listeners(EventType) :void&lt;br&gt;+&amp;nbsp; on_*(*args, bool) :void&amp;nbsp; (각 이벤트를 발동시키는 함수들.)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;" vertex="1" parent="82">
+                    <mxGeometry y="130" width="330" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="86" value="&lt;font&gt;휴지통&lt;/font&gt;" style="swimlane;whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fontSize=12;fontColor=#FF3333;strokeColor=#FF3333;" vertex="1" parent="1">
+                    <mxGeometry x="1410" y="960" width="244" height="209" as="geometry"/>
+                </mxCell>
+                <mxCell id="79" value="&lt;span style=&quot;font-family: &amp;quot;Architects Daughter&amp;quot;; font-size: 10px;&quot;&gt;&amp;lt;&amp;lt; enum &amp;gt;&amp;gt;&lt;/span&gt;&lt;font face=&quot;Architects Daughter&quot;&gt;&lt;br&gt;ItemType&lt;/font&gt;" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;fillColor=#60a917;fontColor=#ffffff;strokeColor=#2D7600;" vertex="1" parent="86">
+                    <mxGeometry x="10" y="36" width="114" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="80" value="아이템의 유형." style="text;strokeColor=#2D7600;fillColor=#60a917;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;fontColor=#ffffff;" vertex="1" parent="79">
+                    <mxGeometry y="40" width="114" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="81" value="+&amp;nbsp; Disposable&lt;br&gt;+&amp;nbsp; Permanent" style="text;strokeColor=#2D7600;fillColor=#60a917;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rounded=0;sketch=1;curveFitting=1;jiggle=2;fontColor=#ffffff;" vertex="1" parent="79">
+                    <mxGeometry y="70" width="114" height="50" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
