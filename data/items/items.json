@@ -16,8 +16,8 @@
             "description": "사용 시: 3골드를 얻습니다.",
             "effects": [
                 {
-                    "effect": "modify_value(ValueType.Money, 3)",
-                    "target": "Executer",
+                    "base_id": "REWARD_MONEY",
+                    "args": {"amount": "3"},
                     "event_type": "on_use"
                 }
             ]
@@ -29,8 +29,8 @@
             "description": "사용 시: 이번 턴에만 공격력을 2 얻습니다.",
             "effects": [
                 {
-                    "effect": "modify_value(ValueType.Attack, 2)",
-                    "target": "Executer",
+                    "base_id": "REWARD_ATTACK",
+                    "args": {"amount": "2"},
                     "event_type": "on_use"
                 }
             ]

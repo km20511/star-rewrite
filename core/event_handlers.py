@@ -2,34 +2,9 @@
 from enum import Enum
 from typing import Callable, TypeVar, Generic
 
-from core.effect import Effect
 from .card import Card
 from .item import Item
 from .effect import Effect
-
-class EventType(Enum):
-    """이벤트가 발생하는 경우의 목록. 특정 카드가 이 이벤트를 구독하는지 판단할 때 사용."""
-
-    OnShown = 1
-    """카드가 공개되었을 때 발동."""
-    OnEntered = 2
-    """카드가 조작 범위 내에 진입했을 때 발동."""
-    OnPurchased = 4
-    """카드를 구매했을 때(적의 경우 처치했을 때)  발동"""
-    OnUsed = 8
-    """아이템을 사용했을 때 발동."""
-    OnDestroyed = 16
-    """카드나 아이템이 파괴되었을 때 발동."""
-    OnPlayerStatChanged = 32
-    """체력, 공격력 등 플레이어 능력치 수치의 변동이 있을 때 발동."""
-    OnTurnBegin = 64
-    """턴 시작 시 발동."""
-    OnTurnEnd = 128
-    """턴 종료 시 발동."""
-    OnCardCostChanged = 256
-    """아이템 카드의 비용이나 적 카드의 체력 변동이 있을 때 발동."""
-    OnCardMoved = 512
-    """카드의 위치가 변경되었을 때 발동."""
 
 
 class PlayerStat(Enum):

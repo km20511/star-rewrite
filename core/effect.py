@@ -6,23 +6,7 @@ from enum import Enum
 from uuid import uuid4
 from typing import List
 
-
-class EffectTarget(Enum):
-    """
-    효과가 영향을 미치는 영역의 유형.
-    """
-
-    Executer = 0
-    """실행되고 있는 효과가 속해 있는 EffectHolder에서만 발동. '3골드를 얻습니다.'와 같이 효과가 적용되는 객체를 가릴 필요 없이 한 번만 실행하는 효과에 적합함."""
-
-    Deck = 1
-    """덱에 있는 카드 중에서 효과가 적용되는 객체를 가릴 경우 사용."""
-
-    Inventory = 2
-    """인벤토리에 있는 아이템 중에서 효과가 적용되는 객체를 가릴 경우 사용."""
-
-    All = 3
-    """인벤토리와 덱의 모든 카드와 아이템을 검사. 가급적 추천하지 않음."""
+from .enums import EffectTarget
 
 
 class Effect:

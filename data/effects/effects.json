@@ -1,0 +1,91 @@
+{
+    "__comment__": {
+        "instruction": [
+            "카드, 아이템 등에 의해 발동되는 효과를 기술한 문서. 이 필드는 주석.",
+            "각 효과는 아래 contents 필드에 나열되며, 아래의 속성을 가짐."
+        ],
+        "id": [
+            "외부에서 이 효과 데이터에 접근하도록 하는 식별자."
+        ],
+        "event_type": [
+            "이 효과가 발동되는 이벤트. 아래 목록 중 하나로 작성할 것.",
+            "OnShown",
+            "OnEntered",
+            "OnPurchased",
+            "OnUsed",
+            "OnDestroyed",
+            "OnPlayerStatChanged",
+            "OnTurnBegin",
+            "OnTurnEnd",
+            "OnCardCostChanged",
+            "OnCardMoved",
+            "OnCalculateCost"
+        ],
+        "effect": [
+            "선택된 대상 객체에 대해 실제로 적용되는 스크립트.",
+            "Python 식으로 평가되어야 하며, 아래와 같은 변수/함수만 사용 가능.",
+            "**추가 바람**"
+        ],
+        "target": [
+            "해당 효과가 적용될 대상. 아래 목록 중 하나로 작성할 것.",
+            "Executer",
+            "Target",
+            "Deck",
+            "Inventory"
+        ],
+        "query": [
+            "target 내에서 효과의 적용 대상을 선정하는 조건.",
+            "생략할 수 있으며, 이 경우 Query를 적용하지 않고 대상 전체를 선택함.",
+            "Python 식으로 평가되어야 하며, bool 혹은 이로 변환 가능한 객체를 반환해야 함.",
+            "아래와 같은 변수/함수만 사용 가능.",
+            "**추가 바람**"
+        ],
+        "order_by": [
+            "선택된 대상을 정렬하고 상위에 해당하는 몇 개만 골라 선별하기 위한 기준.",
+            "method와 crop을 갖는 객체.",
+            "생락할 수 있으며, 이 경우 Order에 의한 선택을 적용하지 않고 대상 전체를 선택함.",
+            "method는 Python 식으로 평가되어야 하고 int, float과 같이 비교 가능한 객체를 반환해야 함.",
+            "crop은 몇 개까지 선택할지를 나타내는 자연수여야 함. 자연수가 아닌 경우 마찬가지로 이를 통한 선택을 수행하지 않음.",
+            "정렬은 sorted의 key와 같이 오름차순으로 이루어지며, 실제 호출 순서와는 무관함."
+        ],
+        "args": [
+            "각 효과는 카드나 아이템 데이터로부터 인수를 받을 수 있음.",
+            "생락할 수 있으며, 이 경우 인수를 사용하지 않음.",
+            "name을 key로, default를 value로 갖는 사전 객체.",
+            "name은 인수의 이름으로, Python에서 이름으로 평가되어야 함.",
+            "default는 효과를 사용하는 데이터에서 해당 인수를 제공하지 않았을 때 사용할 값으로, 해당 값을 반환하는 식으로 평가되어야 함.",
+            "default의 식은 아래와 같은 변수/함수만 사용 가능.",
+            "**추가 바람**"
+        ]
+    },
+    "contents": [
+        {
+            "id": "REWARD_MONEY",
+            "event_type": "OnPurchased",
+            "effect": "modify_player_stat(PLAYER_MONEY, amount)",
+            "target": "Target",
+            "args": {"amount": "0"}
+        },
+        {
+            "id": "REWARD_HEALTH",
+            "event_type": "OnPurchased",
+            "effect": "modify_player_stat(PLAYER_HEALTH, amount)",
+            "target": "Target",
+            "args": {"amount": "0"}
+        },
+        {
+            "id": "REWARD_ATTACK",
+            "event_type": "OnPurchased",
+            "effect": "modify_player_stat(PLAYER_ATTACK, amount)",
+            "target": "Target",
+            "args": {"amount": "0"}
+        },
+        {
+            "id": "REWARD_ITEM",
+            "event_type": "OnPurchased",
+            "effect": "add_item(id=item_id, amount=amount)",
+            "target": "Target",
+            "args": {"item_id": "0", "amount": "1"}
+        }
+    ]
+}

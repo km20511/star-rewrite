@@ -22,9 +22,8 @@
             "description": "처치 보상: 1골드",
             "effects": [
                 {
-                    "effect": "modify_value(value_type = ValueType.Money, amount = 1)",
-                    "target": "Executer",
-                    "event_type": "on_bought"
+                    "base_id": "REWARD_MONEY",
+                    "args": {"amount": "1"}
                 }
             ]
         },
@@ -37,9 +36,8 @@
             "description": "처치 보상: 3골드",
             "effects": [
                 {
-                    "effect": "modify_value(value_type = ValueType.Money, amount = 3)",
-                    "target": "Executer",
-                    "event_type": "on_bought"
+                    "base_id": "REWARD_MONEY",
+                    "args": {"amount": "3"}
                 }
             ]
         },
@@ -52,9 +50,8 @@
             "description": "처치 보상: 3골드\n처치 시 소형 슬라임을 둘 소환합니다.",
             "effects": [
                 {
-                    "effect": "modify_value(value_type = ValueType.Money, amount = 3)",
-                    "target": "Executer",
-                    "event_type": "on_bought"
+                    "base_id": "REWARD_MONEY",
+                    "args": {"amount": "3"}
                 },
                 {
                     "effect": "insert_card(id = 101, amount = 2)",
@@ -72,9 +69,8 @@
             "description": "처치 보상: 3골드\n이 카드의 체력은 플레이어와의 거리에 비례합니다.",
             "effects": [
                 {
-                    "effect": "modify_value(value_type = ValueType.Money, amount = 3)",
-                    "target": "Executer",
-                    "event_type": "on_bought"
+                    "base_id": "REWARD_MONEY",
+                    "args": {"amount": "3"}
                 },
                 {
                     "effect": "set_value(value_type = ValueType.Cost, amount = abs(this.index) * 2)",
@@ -92,9 +88,8 @@
             "description": "구매 시: '아르바이트 수행'을 얻습니다.",
             "effects": [
                 {
-                    "effect": "add_item(id = 3, amount = 1)",
-                    "target": "Executer",
-                    "event_type": "on_bought"
+                    "base_id": "REWARD_ITEM",
+                    "args": {"item_id": "3", "amount": "1"}
                 }
             ]
         },
@@ -107,9 +102,8 @@
             "description": "구매 시: 체력을 6 얻습니다.",
             "effects": [
                 {
-                    "effect": "modify_value(value_type = ValueType.Health, amount = 6)",
-                    "target": "Executer",
-                    "event_type": "on_bought"
+                    "base_id": "REWARD_HEALTH",
+                    "args": {"amount": "6"}
                 }
             ]
         },
@@ -144,9 +138,8 @@
             "description": "『바깥은 혼자 돌아다니기 위험하단다.\n이 목검을 가져가렴.』",
             "effects": [
                 {
-                    "effect": "add_item(id = 8, amount = 1)",
-                    "target": "Executer",
-                    "event_type": "on_bought"
+                    "base_id": "REWARD_ITEM",
+                    "args": {"item_id": "8", "amount": "1"}
                 }
             ]
         },
@@ -167,7 +160,7 @@
                     "effect": "modify_value(value_type = ValueType.Cost, amount = -3)",
                     "target": "Deck",
                     "query": "this.type == CardType.Enemy && this.is_front",
-                    "order_by": {"value": "distance(this, executer)", "crop": 2},
+                    "order_by": {"method": "distance(this, executer)", "crop": 2},
                     "event_type": "on_bought"
                 }
             ]

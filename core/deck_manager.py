@@ -15,10 +15,10 @@ class Deck:
     이 게임에서는 플레이어가 활동하는 전장의 역할도 한다.
     덱에 있는 카드를 관리하고, 효과 스크립트가 조건에 맞게 카드를 조작할 수 있는 메소드를 제공한다.
     """
-    def __init__(self, deck: List[Card], player_index: int = 0) -> None:
-        self.__deck: List[Card] = deck.copy()
+    def __init__(self, cards: List[Card], player_index: int = 0) -> None:
+        self.__cards: List[Card] = cards.copy()
         self.__player_index: int = player_index
-        for ind, card in enumerate(self.__deck):
+        for ind, card in enumerate(self.__cards):
             card.set_index(ind, init = True)
 
     @property
@@ -34,12 +34,12 @@ class Deck:
         카드에 저장된 인덱스 데이터 갱신. 
         :param init: 초기화/이동 여부.
         """
-        for ind, card in enumerate(self.__deck):
+        for ind, card in enumerate(self.__cards):
             card.set_index(ind, init) 
 
     def get_cards(self, query: Callable[[Card], bool] = None) -> List[Card]:
         """조건에 맞는 카드를 순서를 유지해 반환."""
-        return list(filter(query, self.__deck)) if query is not None else self.__deck.copy()
+        return list(filter(query, self.__cards)) if query is not None else self.__cards.copy()
     
     def print_table(self, query: Callable[[Card], bool] = None, header: bool = True) -> str:
         """
@@ -47,7 +47,7 @@ class Deck:
         열 구성: 순번, 이름, 유형, 현재 인덱스, 이전 인덱스, 비용
         """
         result: str = "(순번, 이름, 유형, 현재 위치, 이전 위치, 비용)\n" if header else ""
-        for ind, card in enumerate(filter(query, self.__deck) if query is not None else self.__deck):
+        for ind, card in enumerate(filter(query, self.__cards) if query is not None else self.__cards):
             result += f"{ind:>2d} {card.card_data.name:20s}\t{card.card_data.type.name:>5s} {card.current_index:>2d} {card.previous_index:>2d} {f'*{card.modified_cost}*' if card.modified_cost != card.card_data.cost else f'{card.modified_cost}':>4s}\n"
         return result.strip()
 
@@ -59,9 +59,9 @@ class Deck:
     
     def shuffle_cards(self, query: "DeckQuery"):
         """조건에 맞는 카드를 서로 섞음."""
-        target_ids: Set[int] = query.get_target_from(self.__deck)
-        mask: List[bool] = [card.id in target_ids for card in self.__deck]
-        target: List[Card] = [card for ind, card in enumerate(self.__deck) if mask[ind]]
+        target_ids: Set[int] = query.get_target_from(self.__cards)
+        mask: List[bool] = [card.id in target_ids for card in self.__cards]
+        target: List[Card] = [card for ind, card in enumerate(self.__cards) if mask[ind]]
         shuffled_target: List[Card] = target.copy()
 
         while target == shuffled_target: # 같은 배열로 섞이는 것 방지
@@ -69,10 +69,10 @@ class Deck:
         
         result: List[Card] = [
             (shuffled_target.pop(0) if mask[ind] else card) 
-            for ind, card in enumerate(self.__deck)
+            for ind, card in enumerate(self.__cards)
         ]
         
-        self.__deck = result 
+        self.__cards = result 
         self.update_index(init = False)
 
     def shift_cards(self, query: "DeckQuery", shift: int):
@@ -90,9 +90,9 @@ class Deck:
         # 이동 대상 카드들의 인덱스.
         index_table: List[int] = []
 
-        target_ids: Set[int] = query.get_target_from(self.__deck)
+        target_ids: Set[int] = query.get_target_from(self.__cards)
 
-        for k, v in enumerate(self.__deck):
+        for k, v in enumerate(self.__cards):
             if v.id in target_ids:
                 target.append(v)
                 index_table.append(k)
@@ -101,7 +101,7 @@ class Deck:
 
         target_count: int = len(index_table)
         if shift > 0: # 우측으로 이동
-            maximum_index: int = len(self.__deck) - 1
+            maximum_index: int = len(self.__cards) - 1
             for i in range(target_count - 1, -1, -1):
                 # 이동 중 플레이어를 지나쳤다면 플레이어 위치 수정
                 if index_table[i] < self.__player_index <= index_table[i] + shift:
@@ -119,9 +119,9 @@ class Deck:
         
         result: List[Card] = [
             (target.pop(0) if i in index_table else non_target.pop(0)) 
-            for i in range(len(self.__deck))
+            for i in range(len(self.__cards))
         ]
-        self.__deck = result
+        self.__cards = result
         self.update_index(init = False)
 
     def insert_cards(self, query: "DeckQuery", card: Callable[[Card], CardData]):
@@ -130,30 +130,30 @@ class Deck:
     
     def destroy_cards(self, query: "DeckQuery"):
         """조건에 맞는 카드를 파괴. 구매/처치에 해당하지 않음."""
-        target_ids: Set[int] = query.get_target_from(self.__deck)
-        result: List[Card] = self.__deck.copy()
-        for k, v in enumerate(self.__deck):
+        target_ids: Set[int] = query.get_target_from(self.__cards)
+        result: List[Card] = self.__cards.copy()
+        for k, v in enumerate(self.__cards):
             if v.id not in target_ids:
                 continue
             if k < self.__player_index:
                 self.__player_index -= 1
             result.remove(v)
-        self.__deck = result
+        self.__cards = result
 
     def show_cards(self, query: "DeckQuery", show: bool = True):
         """조건에 맞는 카드를 공개(앞면)/비공개(뒷면) 처리."""
-        target_ids: Set[int] = query.get_target_from(self.__deck)
-        for card in self.__deck:
+        target_ids: Set[int] = query.get_target_from(self.__cards)
+        for card in self.__cards:
             if card.id in target_ids:
                 card.is_front_face = show
 
     def modify_card_cost(self, query: "DeckQuery", amount: int):
         """조건에 맞는 카드의 비용을 변동시킴. 일회성 효과 전용."""
-        target_ids: Set[int] = query.get_target_from(self.__deck)
-        for card in self.__deck:
+        target_ids: Set[int] = query.get_target_from(self.__cards)
+        for card in self.__cards:
             if card.id in target_ids:
                 card.instant_cost_modifier += amount
-                
+
 
 
 class DeckQuery:
