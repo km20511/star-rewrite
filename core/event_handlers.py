@@ -2,9 +2,9 @@
 from enum import Enum
 from typing import Callable, TypeVar, Generic
 
-from .card import Card
-from .item import Item
-from .effect import Effect
+from core.card import Card
+from core.item import Item
+from core.effect import Effect
 
 
 class PlayerStat(Enum):
