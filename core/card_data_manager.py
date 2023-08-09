@@ -48,12 +48,13 @@ __db_cards: Dict[int, CardData] = {}
 __db_items: Dict[int, ItemData] = {}
 """등록된 아이템 데이터의 목록. 외부에서 접근하지 말 것. (대신 get_item_data()를 사용할 것.)"""
 
+
 def initialize():
     """파일을 불러오고 DB를 초기화하는 함수. 이 모듈을 사용하기 전 호출할 것."""
     __db_cards.clear()
     __db_items.clear()
 
-    with open(CARDS_DATA_PATH, encoding = "utf-8") as f:
+    with open(CARDS_DATA_PATH, encoding="utf-8") as f:
         tree_cards: dict = json.load(f)
 
     for card in tree_cards["contents"]:
@@ -67,9 +68,9 @@ def initialize():
             card["effects"]
         )
 
-    with open(ITEMS_DATA_PATH, encoding = "utf-8") as f:
+    with open(ITEMS_DATA_PATH, encoding="utf-8") as f:
         tree_items: dict = json.load(f)
-    
+
     for item in tree_items["contents"]:
         __db_items[item["id"]] = ItemData(
             item["id"],
@@ -79,21 +80,26 @@ def initialize():
             item["effects"]
         )
 
+
 def get_card_data(id: int) -> CardData:
     """DB에서 주어진 id에 해당하는 카드를 찾아 반환. 찾지 못할 경우 None 반환."""
     return __db_cards.get(id, None)
+
 
 def get_item_data(id: int) -> ItemData:
     """DB에서 주어진 id에 해당하는 아이템을 찾아 반환. 찾지 못할 경우 None 반환."""
     return __db_items.get(id, None)
 
+
 def all_cards() -> List[CardData]:
     """불러온 모든 카드 데이터 목록을 반환"""
     return __db_cards.copy()
 
+
 def all_items() -> List[ItemData]:
     """불러온 모든 아이템 데이터 목록을 반환"""
     return __db_items.copy()
+
 
 if __name__ == "__main__":
     initialize()

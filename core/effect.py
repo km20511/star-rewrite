@@ -3,6 +3,7 @@
 """
 import json
 from enum import Enum
+from uuid import uuid4
 from typing import List
 
 
@@ -91,7 +92,13 @@ class EffectHolder:
     효과들을 관리하며 각 효과를 실행하는 주체를 명확히 함. Card나 Item 클래스는 이를 상속하며, Game 클래스 등에 하나의 객체를 생성해 잔류 효과 구현 가능.
     """
     def __init__(self, effects: List[Effect] = []) -> None:
+        self.__id = uuid4().int
         self.__effects: List[Effect] = effects
+
+    @property
+    def id(self):
+        """ 카드, 아이템 등 객체를 식별하는 고유 id. """
+        return self.__id
 
     def add_effect(self, effect: Effect):
         """Effect를 목록에 추가"""
