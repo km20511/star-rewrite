@@ -4,9 +4,9 @@
 from random import shuffle
 from typing import List, Callable, Optional, Set
 
-from .card import Card
-from .utils import Comparable
-from .card_data_manager import CardData
+from core.card import Card
+from core.utils import Comparable
+from core.card_data_manager import CardData
 
 
 class Deck:

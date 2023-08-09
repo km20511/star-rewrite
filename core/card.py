@@ -1,15 +1,13 @@
 """ 덱의 카드를 표현하는 객체를 구현한 스크립트. """
-from uuid import uuid4
-
-from . import effect
-from . import card_data_manager as cdm
+from core.effect import Effect, EffectHolder
+from core.card_data_manager import CardData
 
 
-class Card(effect.EffectHolder):
+class Card(EffectHolder):
     """
     덱에 존재하는 카드 클래스.
     """
-    def __init__(self, data: cdm.CardData, index:int = -1):
+    def __init__(self, data: CardData, index:int = -1):
         """ Card의 초기화 메소드.
         :param data: 이 카드에 표시되는 데이터.
         :param index: 이 카드가 덱에서 존재하는 위치. *실제 위치와 동일해야 함. 수시로 갱신해 동기화할 것.*
@@ -20,7 +18,7 @@ class Card(effect.EffectHolder):
         self.__modified_cost = data.cost
         self.__instant_cost_modifier = 0
         self.__is_front_face = False
-        super().__init__([effect.Effect.from_json_dict(self, tree) for tree in data.effects])
+        super().__init__([Effect(self, effect_data) for effect_data in data.effects])
 
     def __repr__(self) -> str:
         return f"Card {{ '{self.__card_data.name} [{self.__card_data.type.name}]' ({f'*{self.modified_cost}*' if self.modified_cost != self.__card_data.cost else self.modified_cost})}}"

@@ -1,8 +1,8 @@
 """게임 진행 중 생기는 이벤트를 호출하고 관리하는 스크립트."""
-from .card import Card
-from .item import Item
-from .enums import EventType
-from .event_handlers import EventHandlerBase, EventHandler1, EventHandler3, PlayerStat
+from core.card import Card
+from core.item import Item
+from core.enums import EventType
+from core.event_handlers import EventHandlerBase, EventHandler1, EventHandler3, PlayerStat
 from typing import Callable, Dict, List
 
 

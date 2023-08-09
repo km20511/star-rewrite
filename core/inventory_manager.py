@@ -3,9 +3,8 @@
 """
 from typing import Callable, List, Optional, Set
 
-from .item import Item
-from .utils import Comparable
-from .card_data_manager import ItemData
+from core.item import Item
+from core.utils import Comparable
 
 
 class Inventory:
