@@ -3,7 +3,7 @@
 """
 import os
 import json
-from typing import List, Dict
+from typing import Final, List, Dict
 from dataclasses import dataclass
 
 from core.enums import CardType, EffectTarget, EventType
@@ -42,13 +42,13 @@ class ItemData:
     effects: List[EffectData]
 
 
-CARDS_DATA_PATH = "data/cards"
+CARDS_DATA_PATH: Final[str] = "data/cards"
 """카드 데이터의 경로. 상수이므로 수정하지 말 것."""
 
-ITEMS_DATA_PATH = "data/items"
+ITEMS_DATA_PATH: Final[str] = "data/items"
 """아이템 데이터의 경로. 상수이므로 수정하지 말 것."""
 
-EFFECTS_DATA_PATH = "data/effects"
+EFFECTS_DATA_PATH: Final[str] = "data/effects"
 """효과 데이터의 경로. 상수이므로 수정하지 말 것."""
 
 __db_cards: Dict[int, CardData] = {}
