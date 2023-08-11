@@ -4,6 +4,18 @@ core 모듈에서 사용하는 Enum 자료구조들을 모아 둔 스크립트.
 from enum import Enum, auto
 
 
+class PlayerStat(Enum):
+    """플레이어 능력치 유형."""
+    Money = auto()
+    """플레이어가 가진 돈."""
+    Health = auto()
+    """플레이어의 체력."""
+    Attack = auto()
+    """플레이어의 공격력."""
+    Action = auto()
+    """플레이어의 행동력."""
+
+
 class CardType(Enum):
     """카드의 유형. 적, 아이템, 사건 카드로 구분."""
     Enemy = auto()

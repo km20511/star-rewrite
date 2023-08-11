@@ -1,4 +1,5 @@
 {
+    "level_name": "모험의 시작",
     "player_money": 10,
     "player_health": 5,
     "player_action": 3,
@@ -6,6 +7,5 @@
     "deck": [
         305, 203, 101, 220, 102, 101, 117, 225
     ],
-    "inventory": [],
-    "boss": 103
+    "inventory": []
 }

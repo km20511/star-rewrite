@@ -5,16 +5,8 @@ from typing import Callable, TypeVar, Generic
 from core.card import Card
 from core.item import Item
 from core.effect import Effect
-
-
-class PlayerStat(Enum):
-    """플레이어 능력치 유형. 주로 OnPlayerStatChanged가 사용."""
-    Health = 0
-    """플레이어의 체력."""
-    Attack = 1
-    """플레이어의 공격력."""
-    Action = 2
-    """플레이어의 행동력."""
+from core.enums import PlayerStat
+from core.game_manager import GameManager
 
 
 # 이벤트 인수용 타입 변수 (확장 시 타입 추가 바람.)
@@ -35,42 +27,42 @@ class EventHandlerBase():
 
 class EventHandler0(EventHandlerBase):
     """인수 없는 이벤트 클래스."""
-    def __init__(self, owner: Effect, listener: Callable[[], None]) -> None:
+    def __init__(self, owner: Effect, listener: Callable[[GameManager], None]) -> None:
         super().__init__(owner)
-        self.__listener: Callable[[], None] = listener
+        self.__listener: Callable[[GameManager], None] = listener
 
-    def invoke(self) -> None:
-        self.__listener()
+    def invoke(self, game_manager: GameManager) -> None:
+        self.__listener(game_manager)
 
 
 class EventHandler1(EventHandlerBase, Generic[T]):
     """인수 1개의 이벤트 클래스."""
-    def __init__(self, owner: Effect, listener: Callable[[T], None]) -> None:
+    def __init__(self, owner: Effect, listener: Callable[[GameManager, T], None]) -> None:
         super().__init__(owner)
-        self.__listener: Callable[[T], None] = listener
+        self.__listener: Callable[[GameManager, T], None] = listener
 
-    def invoke(self, arg: T) -> None:
-        self.__listener(arg)
+    def invoke(self, game_manager: GameManager, arg: T) -> None:
+        self.__listener(game_manager, arg)
 
 
 class EventHandler2(EventHandlerBase, Generic[T, U]):
     """인수 2개의 이벤트 클래스."""
-    def __init__(self, owner: Effect, listener: Callable[[T, U], None]) -> None:
+    def __init__(self, owner: Effect, listener: Callable[[GameManager, T, U], None]) -> None:
         super().__init__(owner)
-        self.__listener: Callable[[T, U], None] = listener
+        self.__listener: Callable[[GameManager, T, U], None] = listener
 
-    def invoke(self, arg0: T, arg1: U) -> None:
-        self.__listener(arg0, arg1)
+    def invoke(self, game_manager: GameManager, arg0: T, arg1: U) -> None:
+        self.__listener(game_manager, arg0, arg1)
 
 
 class EventHandler3(EventHandlerBase, Generic[T, U, V]):
     """인수 3개의 이벤트 클래스."""
-    def __init__(self, owner: Effect, listener: Callable[[T, U, V], None]) -> None:
+    def __init__(self, owner: Effect, listener: Callable[[GameManager, T, U, V], None]) -> None:
         super().__init__(owner)
-        self.__listener: Callable[[T, U, V], None] = listener
+        self.__listener: Callable[[GameManager, T, U, V], None] = listener
 
-    def invoke(self, arg0: T, arg1: U, arg2: V) -> None:
-        self.__listener(arg0, arg1, arg2)
+    def invoke(self, game_manager: GameManager, arg0: T, arg1: U, arg2: V) -> None:
+        self.__listener(game_manager, arg0, arg1, arg2)
 
 
 # class OnShownEventHandler(EventHandler1[Card]):

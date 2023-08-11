@@ -5,11 +5,12 @@
 import os
 import json
 from datetime import datetime
-from typing import Final, List
+from typing import Any, Dict, Final, List
 from dataclasses import dataclass
 
 import core.card_data_manager as cdm
 from core.card import Card
+from core.enums import PlayerStat
 from core.item import Item
 from core.deck_manager import Deck
 from core.inventory_manager import Inventory
@@ -27,14 +28,14 @@ class GameState:
     """
     GameManager에서 내부적으로 사용하는 현재 게임 상태.
     """
-    player_money: int = 5,
-    player_health: int = 5,
-    player_attack: int = 0,
-    player_action: int = 3, 
-    player_index: int = 0,
-    player_remaining_action: int = 3,
-    current_turn: int = 1,
-    deck: List[Card] = [],
+    player_money: int = 5
+    player_health: int = 5
+    player_attack: int = 0
+    player_action: int = 3
+    player_index: int = 0
+    player_remaining_action: int = 3
+    current_turn: int = 1
+    deck: List[Card] = []
     inventory: List[Item] = []
 
 
@@ -66,6 +67,11 @@ class GameManager:
         """현재 게임의 인벤토리."""
         return self.__inventory
 
+    @property
+    def event_manager(self) -> EventManager:
+        """이 객체가 사용 중인 EventManager."""
+        return self.__event_manager
+
     @staticmethod
     def create_from_level(path: str) -> "GameManager":
         """level json 파일로부터 새 게임 생성.
@@ -84,24 +90,21 @@ class GameManager:
             state.player_action = tree["player_action"]
             state.player_remaining_action = tree["player_action"]
 
-        cards: List[Card] = []
         for i in tree["deck"]:
             data = cdm.get_card_data(i)
             if data is None: 
                 print(f"Error: 존재하지 않는 카드 ID: {i}")
                 continue
-            cards.append(Card(data))
+            state.deck.append(Card(data))
 
-        items: List[Item] = []
         for i in tree["inventory"]:
             data = cdm.get_item_data(i)
             if data is None: 
                 print(f"Error: 존재하지 않는 아이템 ID: {i}")
                 continue
-            items.append(Item(data))
+            state.inventory.append(Item(data))
 
-        # TODO: boss 처리
-        raise NotImplementedError
+        return GameManager(state, tree["level_name"])
 
     @staticmethod
     def create_from_savefile(path: str) -> "GameManager":
@@ -149,6 +152,33 @@ class GameManager:
 
     def get_draw_events(self):
         """이전 호출 이후로 생긴 게임 상태의 변화 등 이벤트의 목록을 반환."""
+        raise NotImplementedError
+
+    def get_readable_static_table(self) -> Dict[str, Any]:
+        """효과 스크립팅에서 사용 가능한 정적 변수/함수 목록 반환(읽기 전용)."""
+        return {
+            "PLAYER_MONEY": PlayerStat.Money,
+            "PLAYER_HEALTH": PlayerStat.Health,
+            "PLAYER_ATTACK": PlayerStat.Attack,
+            "PLAYER_ACTION": PlayerStat.Action,
+            "get_player_stat": lambda x: {
+                    PlayerStat.Money: self.__game_state.player_money,
+                    PlayerStat.Health: self.__game_state.player_health,
+                    PlayerStat.Attack: self.__game_state.player_attack,
+                    PlayerStat.Action: self.__game_state.player_action
+                }.get(x),
+            "abs": abs,
+            "len": len
+        }
+
+    def get_writable_static_table(self) -> Dict[str, Any]:
+        """효과 스크립팅에서 사용 가능한 정적 변수/함수 목록 반환(쓰기 전용)."""
+        return {
+            "modify_player_stat": self.modify_player_stat
+        }
+    
+    def modify_player_stat(self, value_type: PlayerStat, amount: int) -> None:
+        """해당 플레이어 능력치를 amount만큼 변화."""
         raise NotImplementedError
 
     def can_buy_card(self, id: int) -> bool:

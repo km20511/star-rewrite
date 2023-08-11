@@ -2,6 +2,7 @@
 from typing import Callable, Dict, List
 
 from core.card import Card
+from core.game_manager import GameManager
 from core.item import Item
 from core.enums import EventType
 from core.event_handlers import EventHandler0, EventHandlerBase, EventHandler1, EventHandler3, PlayerStat
@@ -52,103 +53,103 @@ class EventManager:
         """이벤트 구독자 목록 초기화."""
         self.__listeners_table[type].clear()
 
-    def on_card_shown(self, target: Card, immediate: bool = False):
+    def on_card_shown(self, game_manager: GameManager, target: Card, immediate: bool = False):
         """카드가 공개되었을 때 이벤트 발생. immediate가 False인 경우 바로 실행하지 않고 이벤트 큐에 등록한다."""
         if immediate:
             for listener in self.__on_card_shown_listeners:
-                listener.invoke(target)
+                listener.invoke(game_manager, target)
         else:
             for listener in self.__on_card_shown_listeners:
-                self.__event_queue.append(lambda : listener.invoke(target))
+                self.__event_queue.append(lambda : listener.invoke(game_manager, target))
 
-    def on_card_entered(self, target: Card, immediate: bool = False):
+    def on_card_entered(self, game_manager: GameManager, target: Card, immediate: bool = False):
         """카드가 조작 가능 범위에 진입했을 때 이벤트 발생. immediate가 False인 경우 바로 실행하지 않고 이벤트 큐에 등록한다."""
         if immediate:
             for listener in self.__on_card_entered_listeners:
-                listener.invoke(target)
+                listener.invoke(game_manager, target)
         else:
             for listener in self.__on_card_entered_listeners:
-                self.__event_queue.append(lambda : listener.invoke(target))
+                self.__event_queue.append(lambda : listener.invoke(game_manager, target))
 
-    def on_card_purchased(self, target: Card, immediate: bool = False):
+    def on_card_purchased(self, game_manager: GameManager, target: Card, immediate: bool = False):
         """플레이어가 덱에서 카드를 구매하거나 적을 처치했을 때 이벤트 발생. immediate가 False인 경우 바로 실행하지 않고 이벤트 큐에 등록한다."""
         if immediate:
             for listener in self.__on_card_purchased_listeners:
-                listener.invoke(target)
+                listener.invoke(game_manager, target)
         else:
             for listener in self.__on_card_purchased_listeners:
-                self.__event_queue.append(lambda : listener.invoke(target))
+                self.__event_queue.append(lambda : listener.invoke(game_manager, target))
     
-    def on_item_used(self, target: Item, immediate: bool = False):
+    def on_item_used(self, game_manager: GameManager, target: Item, immediate: bool = False):
         """플레이어가 인벤토리에서 아이템을 사용했을 때 이벤트 발생. immediate가 False인 경우 바로 실행하지 않고 이벤트 큐에 등록한다."""
         if immediate:
             for listener in self.__on_item_used_listeners:
-                listener.invoke(target)
+                listener.invoke(game_manager, target)
         else:
             for listener in self.__on_item_used_listeners:
-                self.__event_queue.append(lambda : listener.invoke(target))
+                self.__event_queue.append(lambda : listener.invoke(game_manager, target))
 
-    def on_card_destroyed(self, target: Card, immediate: bool = False):
+    def on_card_destroyed(self, game_manager: GameManager, target: Card, immediate: bool = False):
         """덱에서 카드가 파괴되었을 때 이벤트 발생. immediate가 False인 경우 바로 실행하지 않고 이벤트 큐에 등록한다."""
         if immediate:
             for listener in self.__on_card_destroyed_listeners:
-                listener.invoke(target)
+                listener.invoke(game_manager, target)
         else:
             for listener in self.__on_card_destroyed_listeners:
-                self.__event_queue.append(lambda : listener.invoke(target))
+                self.__event_queue.append(lambda : listener.invoke(game_manager, target))
     
-    def on_player_stat_changed(self, stat_type: PlayerStat, previous: int, current: int, immediate: bool = False):
+    def on_player_stat_changed(self, game_manager: GameManager, stat_type: PlayerStat, previous: int, current: int, immediate: bool = False):
         """체력 등 플레이어의 능력치에 변동이 생겼을 때 이벤트 발생. immediate가 False인 경우 바로 실행하지 않고 이벤트 큐에 등록한다."""
         if immediate:
             for listener in self.__on_player_stat_changed_listeners:
-                listener.invoke(stat_type, previous, current)
+                listener.invoke(game_manager, stat_type, previous, current)
         else:
             for listener in self.__on_player_stat_changed_listeners:
-                self.__event_queue.append(lambda : listener.invoke(stat_type, previous, current))
+                self.__event_queue.append(lambda : listener.invoke(game_manager, stat_type, previous, current))
 
-    def on_turn_begin(self, current_turn: int, immediate: bool = False):
+    def on_turn_begin(self, game_manager: GameManager, current_turn: int, immediate: bool = False):
         """턴이 시작했을 때 이벤트 발생. immediate가 False인 경우 바로 실행하지 않고 이벤트 큐에 등록한다."""
         if immediate:
             for listener in self.__on_turn_begin_listeners:
-                listener.invoke(current_turn)
+                listener.invoke(game_manager, current_turn)
         else:
             for listener in self.__on_turn_begin_listeners:
-                self.__event_queue.append(lambda : listener.invoke(current_turn))
+                self.__event_queue.append(lambda : listener.invoke(game_manager, current_turn))
 
-    def on_turn_end(self, current_turn: int, immediate: bool = False):
+    def on_turn_end(self, game_manager: GameManager, current_turn: int, immediate: bool = False):
         """턴이 끝날 때 이벤트 발생. immediate가 False인 경우 바로 실행하지 않고 이벤트 큐에 등록한다."""
         if immediate:
             for listener in self.__on_turn_end_listeners:
-                listener.invoke(current_turn)
+                listener.invoke(game_manager, current_turn)
         else:
             for listener in self.__on_turn_end_listeners:
-                self.__event_queue.append(lambda : listener.invoke(current_turn))
+                self.__event_queue.append(lambda : listener.invoke(game_manager, current_turn))
 
-    def on_card_cost_changed(self, target: Card, previous: int, current: int, immediate: bool = False):
+    def on_card_cost_changed(self, game_manager: GameManager, target: Card, previous: int, current: int, immediate: bool = False):
         """카드의 비용(적의 경우 체력)이 변동되었을 때 이벤트 발생. immediate가 False인 경우 바로 실행하지 않고 이벤트 큐에 등록한다."""
         if immediate:
             for listener in self.__on_card_cost_changed_listeners:
-                listener.invoke(target, previous, current)
+                listener.invoke(game_manager, target, previous, current)
         else:
             for listener in self.__on_card_cost_changed_listeners:
-                self.__event_queue.append(lambda : listener.invoke(target, previous, current))
+                self.__event_queue.append(lambda : listener.invoke(game_manager, target, previous, current))
 
-    def on_card_moved(self, target: Card, previous: int, current: int, immediate: bool = False):
+    def on_card_moved(self, game_manager: GameManager, target: Card, previous: int, current: int, immediate: bool = False):
         """카드가 이동했을 때 이벤트 발생. immediate가 False인 경우 바로 실행하지 않고 이벤트 큐에 등록한다."""
         if immediate:
             for listener in self.__on_card_moved_listeners:
-                listener.invoke(target, previous, current)
+                listener.invoke(game_manager, target, previous, current)
         else:
             for listener in self.__on_card_moved_listeners:
-                self.__event_queue.append(lambda : listener.invoke(target, previous, current))
+                self.__event_queue.append(lambda : listener.invoke(game_manager, target, previous, current))
 
-    def on_calculate_card_cost(self, immediate: bool = False):
+    def on_calculate_card_cost(self, game_manager: GameManager, immediate: bool = False):
         if immediate:
             for listener in self.__on_calculate_card_cost:
-                listener.invoke()
+                listener.invoke(game_manager)
         else:
             for listener in self.__on_calculate_card_cost:
-                self.__event_queue.append(lambda : listener.invoke())
+                self.__event_queue.append(lambda : listener.invoke(game_manager))
 
     def invoke_events(self):
         """이벤트 큐의 모든 이벤트 실행."""

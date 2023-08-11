@@ -4,6 +4,7 @@
 from uuid import uuid4
 from typing import List
 
+from core.game_manager import GameManager
 from core.obj_data_formats import EffectData
 
 class Effect:
@@ -26,6 +27,15 @@ class Effect:
     @property
     def data(self) -> EffectData:
         return self.__data
+
+    def register_event(self, game_manager: GameManager):
+        """이 객체 효과를 EventManager에 등록."""
+        event_manager = game_manager.event_manager
+        raise NotImplementedError
+
+    def unregister_event(self, game_manager: GameManager):
+        """이 객체가 EventManager에 등록되어 있다면 등록 해제."""
+        raise NotImplementedError
     
 
 class EffectHolder:
