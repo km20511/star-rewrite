@@ -6,7 +6,7 @@ from typing import List, Callable, Optional, Set
 
 from core.card import Card
 from core.utils import Comparable
-from core.card_data_manager import CardData
+from core.obj_data_formats import CardData
 
 
 class Deck:

@@ -1,6 +1,6 @@
 """ 덱의 카드를 표현하는 객체를 구현한 스크립트. """
 from core.effect import Effect, EffectHolder
-from core.card_data_manager import CardData
+from core.obj_data_formats import CardData
 
 
 class Card(EffectHolder):

@@ -4,15 +4,14 @@
 from uuid import uuid4
 from typing import List
 
-from core.card_data_manager import EffectData
-
+from core.obj_data_formats import EffectData
 
 class Effect:
     """
     json에서 데이터로 기술된 효과를 구현하며, EffectHolder 객체에 붙여 사용함.
     """
     def __init__(self, owner: "EffectHolder", data: EffectData) -> None:
-        self.__id: int = uuid4()
+        self.__id: int = uuid4().int
         self.__owner: EffectHolder = owner
         self.__data: EffectData = data
 

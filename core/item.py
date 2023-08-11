@@ -1,5 +1,5 @@
 from core.effect import Effect, EffectHolder
-from core.card_data_manager import ItemData
+from core.obj_data_formats import ItemData
 
 
 class Item(EffectHolder):

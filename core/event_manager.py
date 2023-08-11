@@ -1,9 +1,10 @@
 """게임 진행 중 생기는 이벤트를 호출하고 관리하는 스크립트."""
+from typing import Callable, Dict, List
+
 from core.card import Card
 from core.item import Item
 from core.enums import EventType
-from core.event_handlers import EventHandlerBase, EventHandler1, EventHandler3, PlayerStat
-from typing import Callable, Dict, List
+from core.event_handlers import EventHandler0, EventHandlerBase, EventHandler1, EventHandler3, PlayerStat
 
 
 class EventManager:
@@ -18,7 +19,8 @@ class EventManager:
         self.__on_turn_begin_listeners: List[EventHandler1[int]] = []
         self.__on_turn_end_listeners: List[EventHandler1[int]] = []
         self.__on_card_cost_changed_listeners: List[EventHandler3[Card, int, int]] = []
-        self.__on_card_moved_listeners: List[EventHandler1[Card, int, int]] = []
+        self.__on_card_moved_listeners: List[EventHandler3[Card, int, int]] = []
+        self.__on_calculate_card_cost: List[EventHandler0] = []
         
         self.__listeners_table: Dict[EventType, List[EventHandlerBase]] = {
             EventType.OnShown: self.__on_card_shown_listeners,
@@ -30,7 +32,8 @@ class EventManager:
             EventType.OnTurnBegin: self.__on_turn_begin_listeners,
             EventType.OnTurnEnd: self.__on_turn_end_listeners,
             EventType.OnCardCostChanged: self.__on_card_cost_changed_listeners,
-            EventType.OnCardMoved: self.__on_card_moved_listeners
+            EventType.OnCardMoved: self.__on_card_moved_listeners,
+            EventType.OnCalculateCardCost: self.__on_calculate_card_cost
         }
 
         self.__event_queue: List[Callable[[], None]] = []
@@ -138,6 +141,14 @@ class EventManager:
         else:
             for listener in self.__on_card_moved_listeners:
                 self.__event_queue.append(lambda : listener.invoke(target, previous, current))
+
+    def on_calculate_card_cost(self, immediate: bool = False):
+        if immediate:
+            for listener in self.__on_calculate_card_cost:
+                listener.invoke()
+        else:
+            for listener in self.__on_calculate_card_cost:
+                self.__event_queue.append(lambda : listener.invoke())
 
     def invoke_events(self):
         """이벤트 큐의 모든 이벤트 실행."""

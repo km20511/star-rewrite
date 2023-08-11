@@ -14,6 +14,7 @@ from core.item import Item
 from core.deck_manager import Deck
 from core.inventory_manager import Inventory
 from core.event_manager import EventManager
+from core.obj_data_formats import CardDrawData, GameDrawState
 
 
 # 상수
@@ -24,7 +25,7 @@ SAVEFILE_PATH: Final[str] = "data/savefiles"
 @dataclass
 class GameState:
     """
-    저장, 그리기 등에 사용하는 현재 게임 상태.
+    GameManager에서 내부적으로 사용하는 현재 게임 상태.
     """
     player_money: int = 5,
     player_health: int = 5,
@@ -46,9 +47,24 @@ class GameManager:
         """GameManager의 초기화 메소드. 외부에서 직접 호출하는 것은 권장하지 않음."""
         self.__game_state: GameState = game_state
         self.__level_name: str = level_name
-        self.__deck: Deck = Deck(game_state.deck)
+        self.__deck: Deck = Deck(game_state.deck, game_state.player_index)
         self.__inventory: Inventory = Inventory(game_state.inventory)
         self.__event_manager: EventManager = EventManager()
+
+    @property
+    def level_name(self) -> str:
+        """현재 게임 레벨의 이름."""
+        return self.__level_name
+    
+    @property
+    def deck(self) -> Deck:
+        """현재 게임의 덱."""
+        return self.__deck
+    
+    @property
+    def inventory(self) -> Inventory:
+        """현재 게임의 인벤토리."""
+        return self.__inventory
 
     @staticmethod
     def create_from_level(path: str) -> "GameManager":
@@ -85,6 +101,7 @@ class GameManager:
             items.append(Item(data))
 
         # TODO: boss 처리
+        raise NotImplementedError
 
     @staticmethod
     def create_from_savefile(path: str) -> "GameManager":
@@ -102,13 +119,33 @@ class GameManager:
             "datetime": datetime.now().strftime('%Y_%m_%d_%H_%M_%S'),
             **self.__game_state.__dict__ # 나중에 고치시오
         }
-        with open(os.path.join(path, f"{self.__level_name}_{datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}.json"), "w", encoding="utf-8") as f:
+        with open(
+            os.path.join(path, f"{self.__level_name}_{datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}.json"), 
+            "w", encoding="utf-8") as f:
             json.dump(tree, f)
         raise NotImplementedError
 
-    def get_game_state(self) -> GameState:
+    def get_game_draw_state(self) -> GameDrawState:
         """현재 게임 상태를 반환. 주로 초기화에 사용."""
-        return self.__game_state
+        self.__event_manager.on_calculate_card_cost(True)
+        return GameDrawState(
+            self.__game_state.player_money,
+            self.__game_state.player_health,
+            self.__game_state.player_attack,
+            self.__game_state.player_action,
+            self.__game_state.player_index,
+            self.__game_state.player_remaining_action,
+            self.__game_state.current_turn,
+            [CardDrawData(
+                card.id,
+                card.card_data.name,
+                card.card_data.type,
+                card.card_data.cost,
+                card.modified_cost,
+                card.card_data.sprite_name,
+                card.card_data.description
+            ) for card in self.__game_state.deck]
+        )
 
     def get_draw_events(self):
         """이전 호출 이후로 생긴 게임 상태의 변화 등 이벤트의 목록을 반환."""

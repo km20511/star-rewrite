@@ -4,42 +4,9 @@
 import os
 import json
 from typing import Final, List, Dict
-from dataclasses import dataclass
 
 from core.enums import CardType, EffectTarget, EventType
-
-@dataclass(frozen=True)
-class EffectData:
-    """효과의 속성을 담는 자료구조."""
-    event_type: EventType
-    effect: str
-    target: EffectTarget
-    query: str
-    order_method: str
-    order_crop: str
-    args: Dict[str, str]
-
-
-@dataclass(frozen=True)
-class CardData:
-    """카드의 속성을 담는 자료구조."""
-    id: int
-    name: str
-    type: CardType
-    cost: int
-    sprite_name: str
-    description: str
-    effects: List[EffectData]
-
-
-@dataclass(frozen=True)
-class ItemData:
-    """아이템의 속성을 담는 자료구조."""
-    id: int
-    name: str
-    sprite_name: str
-    description: str
-    effects: List[EffectData]
+from core.obj_data_formats import CardData, EffectData, ItemData
 
 
 CARDS_DATA_PATH: Final[str] = "data/cards"
