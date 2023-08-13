@@ -167,6 +167,8 @@ class GameManager:
                     PlayerStat.Attack: self.__game_state.player_attack,
                     PlayerStat.Action: self.__game_state.player_action
                 }.get(x),
+            "get_card_data": cdm.get_card_data,
+            "get_item_data": cdm.get_item_data,
             "abs": abs,
             "len": len
         }

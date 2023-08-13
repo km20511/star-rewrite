@@ -1,7 +1,7 @@
 """
 게임 내 인벤토리를 관리하는 스크립트.
 """
-from typing import Callable, List, Optional, Set
+from typing import Any, Callable, Dict, List, Optional, Set
 
 from core.item import Item
 from core.utils import Comparable
@@ -18,6 +18,18 @@ class Inventory:
     def get_items(self, query: Callable[[Item], bool]) -> List[Item]:
         """조건에 맞는 아이템의 목록을 반환."""
         return list(filter(query, self.__items)) if query is not None else self.__items.copy()
+
+    def get_readable_static_table(self) -> Dict[str, Any]:
+        """효과 스크립팅에서 사용 가능한 정적 변수/함수 목록 반환(읽기 전용)."""
+        return {
+            "count_items": lambda query: len(self.get_items(query))
+        }
+
+    def get_writable_static_table(self, inventory_query: "InventoryQuery") -> Dict[str, Any]:
+        """효과 스크립팅에서 사용 가능한 정적 변수/함수 목록 반환(쓰기 전용)."""
+        return {
+            "destroy_items": lambda : self.destroy_items(inventory_query)
+        }
     
     def create_query(self) -> "InventoryQuery":
         """이 객체를 대상으로 하는 InventoryQuery 생성."""

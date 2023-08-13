@@ -16,6 +16,9 @@ class Effect:
         self.__owner: EffectHolder = owner
         self.__data: EffectData = data
 
+    def __eq__(self, __value: object) -> bool:
+        return isinstance(__value, Effect) and self.id == __value.id
+
     @property
     def id(self) -> int:
         return self.__id
@@ -30,12 +33,11 @@ class Effect:
 
     def register_event(self, game_manager: GameManager):
         """이 객체 효과를 EventManager에 등록."""
-        event_manager = game_manager.event_manager
-        raise NotImplementedError
+        game_manager.event_manager.register_effect(game_manager, self)
 
     def unregister_event(self, game_manager: GameManager):
         """이 객체가 EventManager에 등록되어 있다면 등록 해제."""
-        raise NotImplementedError
+        game_manager.event_manager.unregister_effect(self)
     
 
 class EffectHolder:
@@ -50,6 +52,9 @@ class EffectHolder:
     def id(self):
         """ 카드, 아이템 등 객체를 식별하는 고유 id. """
         return self.__id
+
+    def __eq__(self, __value: object) -> bool:
+        return type(self) == type(__value) and self.id == __value.id
 
     def add_effect(self, effect: Effect):
         """Effect를 목록에 추가"""

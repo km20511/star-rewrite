@@ -31,9 +31,6 @@ class EffectTarget(Enum):
     Executer = auto()
     """실행되고 있는 효과가 속해 있는 EffectHolder에서만 발동. '3골드를 얻습니다.'와 같이 효과가 적용되는 객체를 가릴 필요 없이 한 번만 실행하는 효과에 적합함."""
 
-    Target = auto()
-    """구매 등 특정 카드나 아이템을 대상으로 발동된 경우, 그 대상 EffectHolder에서만 발동."""
-
     Deck = auto()
     """덱에 있는 카드 중에서 효과가 적용되는 객체를 가릴 경우 사용."""
 

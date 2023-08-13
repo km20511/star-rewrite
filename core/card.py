@@ -45,7 +45,7 @@ class Card(EffectHolder):
 
     @modified_cost.setter
     def modified_cost(self, cost: int):
-        self.__modified_cost = cost if cost >= 0 else 0
+        self.__modified_cost = cost
 
     @property
     def instant_cost_modifier(self):

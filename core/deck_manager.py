@@ -2,7 +2,7 @@
 게임 내 덱을 관리하는 스크립트.
 """
 from random import shuffle
-from typing import List, Callable, Optional, Set
+from typing import Any, Dict, List, Callable, Optional, Set, Tuple
 
 from core.card import Card
 from core.utils import Comparable
@@ -18,6 +18,9 @@ class Deck:
     def __init__(self, cards: List[Card], player_index: int = 0) -> None:
         self.__cards: List[Card] = cards.copy()
         self.__player_index: int = player_index
+        self.__cost_setters: List[Tuple["DeckQuery", Callable[[Card], int]]] = []
+        self.__cost_modifiers: List[Tuple["DeckQuery", Callable[[Card], int]]] = []
+        self.__continuous_cost_mode: bool = False
         for ind, card in enumerate(self.__cards):
             card.set_index(ind, init = True)
 
@@ -50,6 +53,24 @@ class Deck:
         for ind, card in enumerate(filter(query, self.__cards) if query is not None else self.__cards):
             result += f"{ind:>2d} {card.card_data.name:20s}\t{card.card_data.type.name:>5s} {card.current_index:>2d} {card.previous_index:>2d} {f'*{card.modified_cost}*' if card.modified_cost != card.card_data.cost else f'{card.modified_cost}':>4s}\n"
         return result.strip()
+
+    def get_readable_static_table(self) -> Dict[str, Any]:
+        """효과 스크립팅에서 사용 가능한 정적 변수/함수 목록 반환(읽기 전용)."""
+        return {
+            "count_cards": lambda query: len(self.get_cards(query))
+        }
+
+    def get_writable_static_table(self, deck_query: "DeckQuery") -> Dict[str, Any]:
+        """효과 스크립팅에서 사용 가능한 정적 변수/함수 목록 반환(쓰기 전용)."""
+        return {
+            "shuffle_cards": lambda : self.shuffle_cards(deck_query),
+            "shift_cards": lambda shift: self.shift_cards(deck_query, shift),
+            "insert_cards": lambda method: self.insert_cards(deck_query, method),
+            "destroy_cards": lambda : self.destroy_cards(deck_query),
+            "show_cards": lambda show : self.show_cards(deck_query, show),
+            "modify_cost": lambda amount: self.modify_cost(deck_query, amount),
+            "set_cost": lambda amount: self.set_cost(deck_query, amount)
+        }
 
     # 아래 메소드들은 효과가 실행될 때 사용됨.
 
@@ -140,20 +161,81 @@ class Deck:
             result.remove(v)
         self.__cards = result
 
-    def show_cards(self, query: "DeckQuery", show: bool = True):
+    def show_cards(self, query: "DeckQuery", show: Callable[[Card], bool]):
         """조건에 맞는 카드를 공개(앞면)/비공개(뒷면) 처리."""
         target_ids: Set[int] = query.get_target_from(self.__cards)
         for card in self.__cards:
             if card.id in target_ids:
-                card.is_front_face = show
+                card.is_front_face = show(card)
 
-    def modify_card_cost(self, query: "DeckQuery", amount: int):
+    def set_cost_mode(self, continuous: bool):
+        """비용 설정 모드를 변경.
+        (1) continuous == True인 경우: 지속 효과 모드. 이 때 
+            스크립트에서 set_cost와 modify_cost를 호출하면 지속 효과 적용.
+        (2) continuous == False인 경우: 일회성 효과 모드. 이 때
+            스크립트에서 위 함수 호출 시 일회성으로 비용 변동.
+        OnCalculateCardCost 이벤트 발동 시에 사용."""
+        self.__continuous_cost_mode = continuous
+
+    def set_cost(self, query: "DeckQuery", amount: Callable[[Card], int]):
+        """조건에 맞는 카드의 비용을 amount만큼으로 설정함. cost_mode의 영향을 받음."""
+        if self.__continuous_cost_mode:
+            self._register_cost_modifier(query, amount, False)
+        else:
+            self._modify_card_cost(query, lambda card: amount(card)-card.modified_cost)
+
+    def modify_cost(self, query: "DeckQuery", amount: Callable[[Card], int]):
+        """조건에 맞는 카드의 비용을 amount만큼 변동시킴. cost_mode의 영향을 받음."""
+        if self.__continuous_cost_mode:
+            self._register_cost_modifier(query, amount, True)
+        else:
+            self._modify_card_cost(query, amount)
+
+    def _modify_card_cost(self, query: "DeckQuery", amount: Callable[[Card], int]):
         """조건에 맞는 카드의 비용을 변동시킴. 일회성 효과 전용."""
         target_ids: Set[int] = query.get_target_from(self.__cards)
         for card in self.__cards:
             if card.id in target_ids:
-                card.instant_cost_modifier += amount
+                card.instant_cost_modifier += amount(card)
 
+    def _register_cost_modifier(self, query: "DeckQuery", amount: Callable[[Card], int], delta: bool):
+        """조건에 맞는 카드의 비용을 변동시키는 함수를 등록.
+        (1) delta가 True면 비용을 amount만큼 변화시키고,
+        (2) delta가 False면 비용을 amount로 설정함.
+        (1)보다 (2)가 먼저 적용됨. 이후 일회성 효과에 의한 비용 변동 반영.
+        주의: 등록된 순서로 실행되므로, (2)는 최근에 등록한 것만 적용됨."""
+        if delta:
+            self.__cost_modifiers.append((query, amount))
+        else:
+            self.__cost_setters.append((query, amount))
+
+    def apply_cost_modifier(self):
+        """등록된 함수를 이용해 카드의 비용을 일괄적으로 계산하고 함수 목록을 초기화."""
+        # 비용 초기화
+        for card in self.__cards:
+            card.modified_cost = card.card_data.cost
+
+        # 비용 설정
+        for query, func in self.__cost_setters:
+            target_ids: Set[int] = query.get_target_from(self.__cards)
+            for card in self.__cards:
+                if card.id in target_ids:
+                    card.modified_cost = func(card)
+
+        # 비용 변화
+        for query, func in self.__cost_modifiers:
+            target_ids: Set[int] = query.get_target_from(self.__cards)
+            for card in self.__cards:
+                if card.id in target_ids:
+                    card.modified_cost += func(card)
+
+        # 일회성 비용 변동 적용 및 음수 비용 처리
+        for card in self.__cards:
+            card.modified_cost = max(card.modified_cost + card.instant_cost_modifier, 0)
+
+        # 함수 목록 초기화
+        self.__cost_modifiers.clear()
+        self.__cost_setters.clear()
 
 
 class DeckQuery:

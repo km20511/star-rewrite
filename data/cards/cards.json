@@ -56,7 +56,7 @@
                 {
                     "effect": "insert_card(id = 101, amount = 2)",
                     "target": "Executer",
-                    "event_type": "on_bought"
+                    "event_type": "OnPurchased"
                 }
             ]
         },
@@ -73,9 +73,9 @@
                     "args": {"amount": "3"}
                 },
                 {
-                    "effect": "set_value(value_type = ValueType.Cost, amount = abs(this.index) * 2)",
+                    "effect": "set_cost(amount = abs(this.current_index) * 2)",
                     "target": "Executer",
-                    "event_type": "on_deck_modified"
+                    "event_type": "OnCardCostChanged"
                 }
             ]
         },
