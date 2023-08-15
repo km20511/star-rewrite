@@ -5,6 +5,7 @@ from random import shuffle
 from typing import Any, Dict, List, Callable, Optional, Set, Tuple
 
 from core.card import Card
+from core.event_manager import EventManager
 from core.utils import Comparable
 from core.obj_data_formats import CardData
 
@@ -15,8 +16,9 @@ class Deck:
     이 게임에서는 플레이어가 활동하는 전장의 역할도 한다.
     덱에 있는 카드를 관리하고, 효과 스크립트가 조건에 맞게 카드를 조작할 수 있는 메소드를 제공한다.
     """
-    def __init__(self, cards: List[Card], player_index: int = 0) -> None:
-        self.__cards: List[Card] = cards.copy()
+    def __init__(self, event_manager: EventManager, cards: List[CardData], player_index: int = 0) -> None:
+        self.__event_manager: EventManager = event_manager
+        self.__cards = [Card(data).register_event(event_manager) for data in cards]
         self.__player_index: int = player_index
         self.__cost_setters: List[Tuple["DeckQuery", Callable[[Card], int]]] = []
         self.__cost_modifiers: List[Tuple["DeckQuery", Callable[[Card], int]]] = []
@@ -37,14 +39,25 @@ class Deck:
         카드에 저장된 인덱스 데이터 갱신. 
         :param init: 초기화/이동 여부.
         """
-        for ind, card in enumerate(self.__cards):
-            card.set_index(ind, init) 
+        # for ind, card in enumerate(self.__cards):
+        #     card.set_index(ind, init) 
+        if init:
+            for ind, card in enumerate(self.__cards):
+                card.current_index = card.previous_index = ind
+        else:
+            for ind, card in enumerate(self.__cards):
+                card.previous_index = card.current_index
+                card.current_index = ind
+                # 이 방법은 추가/삭제로 인한 인덱스 변경에도 발동되는 문제가 있음.
+                # 더 나은 조건 검사 방법이 있을까?
+                if card.previous_index != ind:
+                    self.__event_manager.on_card_moved(card, card.previous_index, ind)
 
-    def get_cards(self, query: Callable[[Card], bool] = None) -> List[Card]:
+    def get_cards(self, query: Optional[Callable[[Card], bool]] = None) -> List[Card]:
         """조건에 맞는 카드를 순서를 유지해 반환."""
         return list(filter(query, self.__cards)) if query is not None else self.__cards.copy()
     
-    def print_table(self, query: Callable[[Card], bool] = None, header: bool = True) -> str:
+    def print_table(self, query: Optional[Callable[[Card], bool]] = None, header: bool = True) -> str:
         """
         조건에 맞는 카드들의 정보를 표 양식의 문자열로 반환하는 디버그용 함수.
         열 구성: 순번, 이름, 유형, 현재 인덱스, 이전 인덱스, 비용
@@ -65,7 +78,7 @@ class Deck:
         return {
             "shuffle_cards": lambda : self.shuffle_cards(deck_query),
             "shift_cards": lambda shift: self.shift_cards(deck_query, shift),
-            "insert_cards": lambda method: self.insert_cards(deck_query, method),
+            "insert_cards": lambda card, amount: self.insert_cards(deck_query, card, amount),
             "destroy_cards": lambda : self.destroy_cards(deck_query),
             "show_cards": lambda show : self.show_cards(deck_query, show),
             "modify_cost": lambda amount: self.modify_cost(deck_query, amount),
@@ -143,11 +156,26 @@ class Deck:
             for i in range(len(self.__cards))
         ]
         self.__cards = result
-        self.update_index(init = False)
+        self.update_index(init=False)
 
-    def insert_cards(self, query: "DeckQuery", card: Callable[[Card], CardData]):
+    def insert_cards(self, query: "DeckQuery", card: Callable[[Card], CardData], amount: Callable[[Card], int]):
         """조건에 맞는 카드의 왼쪽에 새로운 카드 추가."""
-        raise NotImplementedError()
+        target_ids: Set[int] = query.get_target_from(self.__cards)
+        cards_copy = self.__cards.copy()
+        # 추가로 인한 인덱스 오차 보정
+        index_offset: int = 0
+
+        for i, c in enumerate(self.__cards):
+            if c.id in target_ids:
+                instance: Card = Card(card(c), i + index_offset)
+                for _ in range(amount(c)):
+                    cards_copy.insert(i + index_offset, instance)
+                    index_offset += 1
+                    if i < self.__player_index:
+                        self.__player_index += 1
+        
+        self.__cards = cards_copy
+        self.update_index(init=False)
     
     def destroy_cards(self, query: "DeckQuery"):
         """조건에 맞는 카드를 파괴. 구매/처치에 해당하지 않음."""
@@ -159,7 +187,9 @@ class Deck:
             if k < self.__player_index:
                 self.__player_index -= 1
             result.remove(v)
+            self.__event_manager.on_card_destroyed(v)
         self.__cards = result
+        self.update_index(init=False)
 
     def show_cards(self, query: "DeckQuery", show: Callable[[Card], bool]):
         """조건에 맞는 카드를 공개(앞면)/비공개(뒷면) 처리."""
@@ -167,6 +197,8 @@ class Deck:
         for card in self.__cards:
             if card.id in target_ids:
                 card.is_front_face = show(card)
+                if card.is_front_face:
+                    self.__event_manager.on_card_shown(card)
 
     def set_cost_mode(self, continuous: bool):
         """비용 설정 모드를 변경.
@@ -224,7 +256,7 @@ class Deck:
 
         # 비용 변화
         for query, func in self.__cost_modifiers:
-            target_ids: Set[int] = query.get_target_from(self.__cards)
+            target_ids = query.get_target_from(self.__cards)
             for card in self.__cards:
                 if card.id in target_ids:
                     card.modified_cost += func(card)

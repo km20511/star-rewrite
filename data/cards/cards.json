@@ -73,7 +73,7 @@
                     "args": {"amount": "3"}
                 },
                 {
-                    "effect": "set_cost(amount = abs(this.current_index) * 2)",
+                    "effect": "set_cost(amount=lambda this: abs(this.current_index) * 2)",
                     "target": "Executer",
                     "event_type": "OnCardCostChanged"
                 }
@@ -116,16 +116,16 @@
             "description": "구매 시: 공개된 적 카드 하나당 공격력을 3 얻고\n체력이 3 이하라면 체력을 6 얻습니다.",
             "effects": [
                 {
-                    "effect": "modify_value(value_type = ValueType.Attack, amount = 3)",
+                    "effect": "modify_player_stat(PLAYER_ATTACK, amount = 3)",
                     "target": "Deck",
-                    "query": "type == CardType.Enemy && this.is_front",
-                    "event_type": "on_bought"
+                    "query": "this.card_data.type == CardType.Enemy and this.is_front_face",
+                    "event_type": "OnPurchased"
                 },
                 {
-                    "effect": "modify_value(value_type = ValueType.Health, amount = 6)",
+                    "effect": "modify_player_stat(PLAYER_HEALTH, amount = 6)",
                     "target": "Executer",
-                    "query": "game_state.health <= 3",
-                    "event_type": "on_bought"
+                    "query": "PLAYER_HEALTH <= 3",
+                    "event_type": "OnPurchased"
                 }
             ]
         },

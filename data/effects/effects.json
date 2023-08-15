@@ -86,7 +86,7 @@
         {
             "id": "REWARD_ITEM",
             "event_type": "OnPurchased",
-            "effect": "add_item(id=item_id, amount=amount)",
+            "effect": "add_item(get_item_data(item_id), amount)",
             "target": "Deck",
             "query": "this == target",
             "args": {"item_id": "0", "amount": "1"}

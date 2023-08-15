@@ -4,6 +4,8 @@
 from typing import Any, Callable, Dict, List, Optional, Set
 
 from core.item import Item
+from core.obj_data_formats import ItemData
+from core.event_manager import EventManager
 from core.utils import Comparable
 
 
@@ -12,12 +14,17 @@ class Inventory:
     게임 속 플레이어가 보유하고 있는 아이템이 나열된 인벤토리.
     아이템을 관리하고, 효과 스크립트가 아이템에 접근할 수 있는 기능 제공.
     """
-    def __init__(self, items: List[Item]) -> None:
-        self.__items: List[Item] = items
+    def __init__(self, event_manager: EventManager, items: List[ItemData]) -> None:
+        self.__event_manager: EventManager = event_manager
+        self.__items: List[Item] = [Item(data).register_event(event_manager) for data in items]
 
-    def get_items(self, query: Callable[[Item], bool]) -> List[Item]:
+    def get_items(self, query: Optional[Callable[[Item], bool]] = None) -> List[Item]:
         """조건에 맞는 아이템의 목록을 반환."""
         return list(filter(query, self.__items)) if query is not None else self.__items.copy()
+
+    def add_item(self, item: ItemData):
+        """목록의 맨 끝에 아이템 추가."""
+        self.__items.append(Item(item))
 
     def get_readable_static_table(self) -> Dict[str, Any]:
         """효과 스크립팅에서 사용 가능한 정적 변수/함수 목록 반환(읽기 전용)."""
@@ -42,6 +49,7 @@ class Inventory:
         for item in self.__items:
             if item.id in target_ids:
                 result.remove(item)
+                self.__event_manager.on_item_destroyed(item)
         self.__items = result
 
 
@@ -98,7 +106,7 @@ class InventoryQuery:
         지정한 조건을 전부 만족하는 덱의 아이템 집합을 반환.
         :return: 조건을 만족하는 아이템의 id 집합.
         """
-        items: List[Item] = self.__inventory.get_items(self.__query)
+        items: List[Item] = self.__inventory.get_items(self.__query) 
         if self.__order_method is not None and self.__order_crop > 0:
             items = sorted(items, key=self.__order_method)[:self.__order_crop]
         return {item.id for item in items}

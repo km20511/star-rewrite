@@ -3,7 +3,7 @@
 """
 import os
 import json
-from typing import Final, List, Dict
+from typing import Final, List, Dict, Optional
 
 from core.enums import CardType, EffectTarget, EventType
 from core.obj_data_formats import CardData, EffectData, ItemData
@@ -65,7 +65,7 @@ def _parse_effect_list(effects: List[dict]) -> List[EffectData]:
     return result
 
 
-def initialize():
+def initialize() -> None:
     """파일을 불러오고 DB를 초기화하는 함수. 이 모듈을 사용하기 전 호출할 것."""
     __db_cards.clear()
     __db_items.clear()
@@ -134,29 +134,29 @@ def initialize():
             )
 
 
-def get_card_data(id: int) -> CardData:
+def get_card_data(id: int) -> Optional[CardData]:
     """DB에서 주어진 id에 해당하는 카드를 찾아 반환. 찾지 못할 경우 None 반환."""
     return __db_cards.get(id, None)
 
-def get_item_data(id: int) -> ItemData:
+def get_item_data(id: int) -> Optional[ItemData]:
     """DB에서 주어진 id에 해당하는 아이템을 찾아 반환. 찾지 못할 경우 None 반환."""
     return __db_items.get(id, None)
 
-def get_effect_data(id: str) -> EffectData:
+def get_effect_data(id: str) -> Optional[EffectData]:
     """DB에서 주어진 id에 해당하는 효과를 찾아 반환. 찾지 못할 경우 None 반환."""
     return __db_effects.get(id, None)
 
 def all_cards() -> List[CardData]:
     """불러온 모든 카드 데이터 목록을 반환."""
-    return __db_cards.copy()
+    return [v for v in __db_cards.values()]
 
 def all_items() -> List[ItemData]:
     """불러온 모든 아이템 데이터 목록을 반환."""
-    return __db_items.copy()
+    return [v for v in __db_items.values()]
 
 def all_effects() -> List[EffectData]:
     """불러온 모든 효과 데이터 목록을 반환."""
-    return __db_effects.copy()
+    return [v for v in __db_effects.values()]
 
 
 if __name__ == "__main__":

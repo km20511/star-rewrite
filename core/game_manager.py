@@ -15,7 +15,7 @@ from core.item import Item
 from core.deck_manager import Deck
 from core.inventory_manager import Inventory
 from core.event_manager import EventManager
-from core.obj_data_formats import CardDrawData, GameDrawState
+from core.obj_data_formats import CardData, CardDrawData, GameDrawState, ItemData, ItemDrawData
 
 
 # 상수
@@ -35,8 +35,6 @@ class GameState:
     player_index: int = 0
     player_remaining_action: int = 3
     current_turn: int = 1
-    deck: List[Card] = []
-    inventory: List[Item] = []
 
 
 class GameManager:
@@ -44,13 +42,31 @@ class GameManager:
     게임의 전체적인 진행을 담당.
     """
 
-    def __init__(self, game_state: GameState, level_name: str) -> None:
+    def __init__(self, game_state: GameState, level_name: str, card_ids: List[int], item_ids: List[int]) -> None:
         """GameManager의 초기화 메소드. 외부에서 직접 호출하는 것은 권장하지 않음."""
         self.__game_state: GameState = game_state
         self.__level_name: str = level_name
-        self.__deck: Deck = Deck(game_state.deck, game_state.player_index)
-        self.__inventory: Inventory = Inventory(game_state.inventory)
-        self.__event_manager: EventManager = EventManager()
+        self.__event_manager: EventManager = EventManager(self)
+        
+        cards: List[CardData] = [data for data in map(cdm.get_card_data,card_ids) if data is not None]
+        items: List[ItemData] = [data for data in map(cdm.get_item_data,item_ids) if data is not None]
+        
+        # for i in card_ids:
+        #     data = cdm.get_card_data(i)
+        #     if data is None: 
+        #         print(f"Error: 존재하지 않는 카드 ID: {i}")
+        #         continue
+        #     cards.append(data)
+
+        # for i in item_ids:
+        #     data = cdm.get_item_data(i)
+        #     if data is None: 
+        #         print(f"Error: 존재하지 않는 아이템 ID: {i}")
+        #         continue
+        #     items.append(data)
+
+        self.__deck: Deck = Deck(self.__event_manager, cards, game_state.player_index)
+        self.__inventory: Inventory = Inventory(self.__event_manager, items)
 
     @property
     def level_name(self) -> str:
@@ -90,21 +106,8 @@ class GameManager:
             state.player_action = tree["player_action"]
             state.player_remaining_action = tree["player_action"]
 
-        for i in tree["deck"]:
-            data = cdm.get_card_data(i)
-            if data is None: 
-                print(f"Error: 존재하지 않는 카드 ID: {i}")
-                continue
-            state.deck.append(Card(data))
 
-        for i in tree["inventory"]:
-            data = cdm.get_item_data(i)
-            if data is None: 
-                print(f"Error: 존재하지 않는 아이템 ID: {i}")
-                continue
-            state.inventory.append(Item(data))
-
-        return GameManager(state, tree["level_name"])
+        return GameManager(state, tree["level_name"], tree["deck"], tree["inventory"])
 
     @staticmethod
     def create_from_savefile(path: str) -> "GameManager":
@@ -147,7 +150,13 @@ class GameManager:
                 card.modified_cost,
                 card.card_data.sprite_name,
                 card.card_data.description
-            ) for card in self.__game_state.deck]
+            ) for card in self.__deck.get_cards()],
+            [ItemDrawData(
+                item.id,
+                item.item_data.name,
+                item.item_data.sprite_name,
+                item.item_data.description
+            ) for item in self.__inventory.get_items()]
         )
 
     def get_draw_events(self):
@@ -176,12 +185,18 @@ class GameManager:
     def get_writable_static_table(self) -> Dict[str, Any]:
         """효과 스크립팅에서 사용 가능한 정적 변수/함수 목록 반환(쓰기 전용)."""
         return {
-            "modify_player_stat": self.modify_player_stat
+            "modify_player_stat": self.modify_player_stat,
+            "add_item": self.add_item
         }
     
     def modify_player_stat(self, value_type: PlayerStat, amount: int) -> None:
         """해당 플레이어 능력치를 amount만큼 변화."""
         raise NotImplementedError
+
+    def add_item(self, item_data: ItemData, amount: int = 1):
+        """인벤토리에 아이템을 amount개만큼 추가."""
+        for i in range(amount):
+            self.inventory.add_item(item_data)
 
     def can_buy_card(self, id: int) -> bool:
         """해당 id의 카드를 구매할 수 있는지 검사."""

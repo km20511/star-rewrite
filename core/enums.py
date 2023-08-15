@@ -27,13 +27,10 @@ class EffectTarget(Enum):
     """
     효과가 영향을 미치는 영역의 유형.
     """
-
     Executer = auto()
     """실행되고 있는 효과가 속해 있는 EffectHolder에서만 발동. '3골드를 얻습니다.'와 같이 효과가 적용되는 객체를 가릴 필요 없이 한 번만 실행하는 효과에 적합함."""
-
     Deck = auto()
     """덱에 있는 카드 중에서 효과가 적용되는 객체를 가릴 경우 사용."""
-
     Inventory = auto()
     """인벤토리에 있는 아이템 중에서 효과가 적용되는 객체를 가릴 경우 사용."""
 
@@ -49,8 +46,10 @@ class EventType(Enum):
     """카드를 구매했을 때(적의 경우 처치했을 때)  발동"""
     OnUsed = auto()
     """아이템을 사용했을 때 발동."""
-    OnDestroyed = auto()
-    """카드나 아이템이 파괴되었을 때 발동."""
+    OnCardDestroyed = auto()
+    """카드가 파괴되었을 때 발동."""
+    OnItemDestroyed = auto()
+    """아이템이 파괴되었을 때 발동."""
     OnPlayerStatChanged = auto()
     """체력, 공격력 등 플레이어 능력치 수치의 변동이 있을 때 발동."""
     OnTurnBegin = auto()

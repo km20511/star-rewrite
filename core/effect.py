@@ -3,8 +3,8 @@
 """
 from uuid import uuid4
 from typing import List
+from core.event_manager import EventManager
 
-from core.game_manager import GameManager
 from core.obj_data_formats import EffectData
 
 class Effect:
@@ -31,13 +31,13 @@ class Effect:
     def data(self) -> EffectData:
         return self.__data
 
-    def register_event(self, game_manager: GameManager):
+    def register_event(self, event_manager: EventManager):
         """이 객체 효과를 EventManager에 등록."""
-        game_manager.event_manager.register_effect(game_manager, self)
+        event_manager.register_effect(self)
 
-    def unregister_event(self, game_manager: GameManager):
+    def unregister_event(self, event_manager: EventManager):
         """이 객체가 EventManager에 등록되어 있다면 등록 해제."""
-        game_manager.event_manager.unregister_effect(self)
+        event_manager.unregister_effect(self)
     
 
 class EffectHolder:
@@ -54,6 +54,8 @@ class EffectHolder:
         return self.__id
 
     def __eq__(self, __value: object) -> bool:
+        if not isinstance(__value, EffectHolder):
+            return False
         return type(self) == type(__value) and self.id == __value.id
 
     def add_effect(self, effect: Effect):
@@ -69,3 +71,15 @@ class EffectHolder:
         """Effect가 목록에 있다면 제거"""
         if effect in self.__effects:
             self.__effects.remove(effect)
+
+    def register_event(self, event_manager: EventManager):
+        """이 객체 효과를 EventManager에 등록."""
+        for effect in self.__effects:
+            effect.register_event(event_manager)
+        return self
+
+    def unregister_event(self, event_manager: EventManager):
+        """이 객체가 EventManager에 등록되어 있다면 등록 해제."""
+        for effect in self.__effects:
+            effect.unregister_event(event_manager)
+        return self
