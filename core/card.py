@@ -1,6 +1,7 @@
 """ 덱의 카드를 표현하는 객체를 구현한 스크립트. """
+from typing import Callable
 from core.effect import Effect, EffectHolder
-from core.obj_data_formats import CardData
+from core.obj_data_formats import CardData, CardSaveData
 
 
 class Card(EffectHolder):
@@ -64,6 +65,16 @@ class Card(EffectHolder):
     @is_front_face.setter
     def is_front_face(self, front: bool):
         self.__is_front_face = front
+
+    @staticmethod
+    def from_save_data(card_data: CardData, data: CardSaveData, index: int = -1) -> "Card":
+        card = Card(card_data, index)
+        card.instant_cost_modifier = data.instant_cost_modifier
+        card.is_front_face = data.is_front_face
+        return card
+
+    def to_save_data(self) -> CardSaveData:
+        return CardSaveData(self.card_data.id, self.is_front_face, self.instant_cost_modifier)
     
     def set_index(self, index: int, init: bool = False):
         """

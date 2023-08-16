@@ -24,6 +24,9 @@
                 {
                     "base_id": "REWARD_MONEY",
                     "args": {"amount": "1"}
+                },
+                {
+                    "base_id": "DESTROY_ON_PURCHASED"
                 }
             ]
         },
@@ -38,6 +41,9 @@
                 {
                     "base_id": "REWARD_MONEY",
                     "args": {"amount": "3"}
+                },
+                {
+                    "base_id": "DESTROY_ON_PURCHASED"
                 }
             ]
         },
@@ -57,6 +63,9 @@
                     "effect": "insert_card(id = 101, amount = 2)",
                     "target": "Executer",
                     "event_type": "OnPurchased"
+                },
+                {
+                    "base_id": "DESTROY_ON_PURCHASED"
                 }
             ]
         },
@@ -73,9 +82,12 @@
                     "args": {"amount": "3"}
                 },
                 {
-                    "effect": "set_cost(amount=lambda this: abs(this.current_index) * 2)",
+                    "effect": "set_cost(amount=lambda this: abs(this.current_index - player_index) * 2)",
                     "target": "Executer",
                     "event_type": "OnCardCostChanged"
+                },
+                {
+                    "base_id": "DESTROY_ON_PURCHASED"
                 }
             ]
         },
@@ -90,6 +102,9 @@
                 {
                     "base_id": "REWARD_ITEM",
                     "args": {"item_id": "3", "amount": "1"}
+                },
+                {
+                    "base_id": "DESTROY_ON_PURCHASED"
                 }
             ]
         },
@@ -104,6 +119,9 @@
                 {
                     "base_id": "REWARD_HEALTH",
                     "args": {"amount": "6"}
+                },
+                {
+                    "base_id": "DESTROY_ON_PURCHASED"
                 }
             ]
         },
@@ -126,6 +144,9 @@
                     "target": "Executer",
                     "query": "PLAYER_HEALTH <= 3",
                     "event_type": "OnPurchased"
+                },
+                {
+                    "base_id": "DESTROY_ON_PURCHASED"
                 }
             ]
         },
@@ -140,6 +161,9 @@
                 {
                     "base_id": "REWARD_ITEM",
                     "args": {"item_id": "8", "amount": "1"}
+                },
+                {
+                    "base_id": "DESTROY_ON_PURCHASED"
                 }
             ]
         },
@@ -162,6 +186,9 @@
                     "query": "this.type == CardType.Enemy && this.is_front",
                     "order_by": {"method": "distance(this, executer)", "crop": 2},
                     "event_type": "on_bought"
+                },
+                {
+                    "base_id": "DESTROY_ON_PURCHASED"
                 }
             ]
         }

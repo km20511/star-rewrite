@@ -4,8 +4,12 @@
     "player_health": 5,
     "player_action": 3,
     "player_index": 0,
+    "player_attack":0,
     "deck": [
         305, 203, 101, 220, 102, 101, 117, 225
     ],
-    "inventory": []
+    "inventory": [],
+    "cost_change":[0,0,0,0,0,0,0,0],
+    "item_usage_count":"Soooooon",
+    "remaining_effects":"NotImplemented"
 }

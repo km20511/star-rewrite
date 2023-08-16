@@ -90,6 +90,20 @@
             "target": "Deck",
             "query": "this == target",
             "args": {"item_id": "0", "amount": "1"}
+        },
+        {
+            "id": "DESTROY_ON_PURCHASED",
+            "event_type": "OnPurchased",
+            "effect": "destroy_cards()",
+            "target": "Deck",
+            "query": "this == target"
+        },
+        {
+            "id": "DESTROY_ON_USED",
+            "event_type": "OnUsed",
+            "effect": "destroy_items()",
+            "target": "Inventory",
+            "query": "this == target"
         }
     ]
 }

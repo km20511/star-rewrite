@@ -190,6 +190,8 @@ class EventManager:
                 }
             ))
 
+            self.invoke_events(recursive=True)
+
         # 이게 맞나...?
         match (effect_data.event_type):
             case EventType.OnShown | EventType.OnEntered | EventType.OnPurchased | EventType.OnCardDestroyed:
@@ -396,9 +398,12 @@ class EventManager:
             for listener in self.__on_calculate_card_cost:
                 self.__event_queue.append(lambda: listener.invoke(self.__game_manager))
 
-    def invoke_events(self):
+    def invoke_events(self, recursive: bool = False):
         """이벤트 큐의 모든 이벤트 실행."""
         executing_events = self.__event_queue.copy()
         self.__event_queue.clear()
         while len(executing_events) > 0:
             executing_events.pop(0)()
+        
+        if recursive and len(self.__event_queue) > 0:
+            self.invoke_events(recursive)

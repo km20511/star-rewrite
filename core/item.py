@@ -1,5 +1,6 @@
+from typing import Callable
 from core.effect import Effect, EffectHolder
-from core.obj_data_formats import ItemData
+from core.obj_data_formats import ItemData, ItemSaveData
 
 
 class Item(EffectHolder):
@@ -13,3 +14,10 @@ class Item(EffectHolder):
     @property
     def item_data(self):
         return self.__item_data
+
+    @staticmethod
+    def from_save_data(item_data: ItemData, _data: ItemSaveData) -> "Item":
+        return Item(item_data)
+
+    def to_save_data(self) -> ItemSaveData:
+        return ItemSaveData(self.item_data.id)

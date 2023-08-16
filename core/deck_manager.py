@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Callable, Optional, Set, Tuple
 from core.card import Card
 from core.event_manager import EventManager
 from core.utils import Comparable
-from core.obj_data_formats import CardData
+from core.obj_data_formats import CardData, CardSaveData
 
 
 class Deck:
@@ -16,9 +16,9 @@ class Deck:
     이 게임에서는 플레이어가 활동하는 전장의 역할도 한다.
     덱에 있는 카드를 관리하고, 효과 스크립트가 조건에 맞게 카드를 조작할 수 있는 메소드를 제공한다.
     """
-    def __init__(self, event_manager: EventManager, cards: List[CardData], player_index: int = 0) -> None:
+    def __init__(self, event_manager: EventManager, cards: List[Tuple[CardData, CardSaveData]], player_index: int = 0) -> None:
         self.__event_manager: EventManager = event_manager
-        self.__cards = [Card(data).register_event(event_manager) for data in cards]
+        self.__cards = [Card.from_save_data(data, save).register_event(event_manager) for data, save in cards]
         self.__player_index: int = player_index
         self.__cost_setters: List[Tuple["DeckQuery", Callable[[Card], int]]] = []
         self.__cost_modifiers: List[Tuple["DeckQuery", Callable[[Card], int]]] = []
@@ -56,6 +56,14 @@ class Deck:
     def get_cards(self, query: Optional[Callable[[Card], bool]] = None) -> List[Card]:
         """조건에 맞는 카드를 순서를 유지해 반환."""
         return list(filter(query, self.__cards)) if query is not None else self.__cards.copy()
+    
+    def get_card_by_id(self, id: int) -> Optional[Card]:
+        """주어진 id에 해당하는 카드를 찾아 반환한다."""
+        cards: List[Card] = [card for card in self.__cards if card.id == id]
+        if len(cards) == 0:
+            return None
+        return cards[0]
+
     
     def print_table(self, query: Optional[Callable[[Card], bool]] = None, header: bool = True) -> str:
         """

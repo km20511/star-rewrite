@@ -1,10 +1,10 @@
 """
 게임 내 인벤토리를 관리하는 스크립트.
 """
-from typing import Any, Callable, Dict, List, Optional, Set
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 from core.item import Item
-from core.obj_data_formats import ItemData
+from core.obj_data_formats import ItemData, ItemSaveData
 from core.event_manager import EventManager
 from core.utils import Comparable
 
@@ -14,14 +14,21 @@ class Inventory:
     게임 속 플레이어가 보유하고 있는 아이템이 나열된 인벤토리.
     아이템을 관리하고, 효과 스크립트가 아이템에 접근할 수 있는 기능 제공.
     """
-    def __init__(self, event_manager: EventManager, items: List[ItemData]) -> None:
+    def __init__(self, event_manager: EventManager, items: List[Tuple[ItemData, ItemSaveData]]) -> None:
         self.__event_manager: EventManager = event_manager
-        self.__items: List[Item] = [Item(data).register_event(event_manager) for data in items]
+        self.__items: List[Item] = [Item.from_save_data(data, save).register_event(event_manager) for data, save in items]
 
     def get_items(self, query: Optional[Callable[[Item], bool]] = None) -> List[Item]:
         """조건에 맞는 아이템의 목록을 반환."""
         return list(filter(query, self.__items)) if query is not None else self.__items.copy()
 
+    def get_item_by_id(self, id: int) -> Optional[Item]:
+        """주어진 id에 해당하는 아이템을 찾아 반환한다."""
+        items: List[Item] = [item for item in self.__items if item.id == id]
+        if len(items) == 0:
+            return None
+        return items[0]
+        
     def add_item(self, item: ItemData):
         """목록의 맨 끝에 아이템 추가."""
         self.__items.append(Item(item))

@@ -5,17 +5,17 @@
 import os
 import json
 from datetime import datetime
-from typing import Any, Dict, Final, List
+from typing import Any, Dict, Final, List, Optional, Tuple
 from dataclasses import dataclass
 
 import core.card_data_manager as cdm
 from core.card import Card
-from core.enums import PlayerStat
+from core.enums import CardType, PlayerStat
 from core.item import Item
 from core.deck_manager import Deck
 from core.inventory_manager import Inventory
 from core.event_manager import EventManager
-from core.obj_data_formats import CardData, CardDrawData, GameDrawState, ItemData, ItemDrawData
+from core.obj_data_formats import CardData, CardDrawData, CardSaveData, GameDrawState, ItemData, ItemDrawData, ItemSaveData
 
 
 # 상수
@@ -42,14 +42,24 @@ class GameManager:
     게임의 전체적인 진행을 담당.
     """
 
-    def __init__(self, game_state: GameState, level_name: str, card_ids: List[int], item_ids: List[int]) -> None:
+    def __init__(self, game_state: GameState, level_name: str, card_saves: List[CardSaveData], item_saves: List[ItemSaveData]) -> None:
         """GameManager의 초기화 메소드. 외부에서 직접 호출하는 것은 권장하지 않음."""
         self.__game_state: GameState = game_state
         self.__level_name: str = level_name
         self.__event_manager: EventManager = EventManager(self)
         
-        cards: List[CardData] = [data for data in map(cdm.get_card_data,card_ids) if data is not None]
-        items: List[ItemData] = [data for data in map(cdm.get_item_data,item_ids) if data is not None]
+        cards: List[Tuple[CardData, CardSaveData]] = [(data, save) 
+            for data, save in map(
+            lambda card_save: (cdm.get_card_data(card_save.data_id), card_save),
+            card_saves) 
+            if data is not None
+        ]
+        items: List[Tuple[ItemData, ItemSaveData]] = [(data, save) 
+            for data, save in map(
+            lambda item_save: (cdm.get_item_data(item_save.data_id), item_save),
+            item_saves) 
+            if data is not None
+        ]
         
         # for i in card_ids:
         #     data = cdm.get_card_data(i)
@@ -89,7 +99,7 @@ class GameManager:
         return self.__event_manager
 
     @staticmethod
-    def create_from_level(path: str) -> "GameManager":
+    def create_from_file(path: str) -> "GameManager":
         """level json 파일로부터 새 게임 생성.
         :param path: 파일이 위치한 현재 작업 경로 기준 상대 경로 또는 절대 경로.
         :return: 해당 파일로 설정한 GameManager 객체.
@@ -102,34 +112,31 @@ class GameManager:
         if "player_money" in tree: state.player_money = tree["player_money"]
         if "player_health" in tree: state.player_health = tree["player_health"]
         if "player_index" in tree: state.player_index = tree["player_index"]
+        if "player_attack" in tree: state.player_attack = tree["player_attack"]
         if "player_action" in tree: 
             state.player_action = tree["player_action"]
             state.player_remaining_action = tree["player_action"]
 
+        card_saves = [CardSaveData(**save_obj) for save_obj in tree["deck"]]
+        item_saves = [ItemSaveData(**save_obj) for save_obj in tree["inventory"]]
+        return GameManager(state, tree["level_name"], card_saves, item_saves)
 
-        return GameManager(state, tree["level_name"], tree["deck"], tree["inventory"])
-
-    @staticmethod
-    def create_from_savefile(path: str) -> "GameManager":
-        """이전에 진행한 저장 파일을 불러옴.
-        :param path: 파일이 위치한 현재 작업 경로 기준 상대 경로 또는 절대 경로.
-        :return: 해당 파일로 설정한 GameManager 객체.
-        """
-        raise NotImplementedError
 
     def save(self, path: str) -> None:
         """현재 게임 상태를 주어진 경로의 폴더에 저장."""
         # TODO: 저장 파일 포맷 완성
+        self.__game_state.player_index = self.__deck.player_index
         tree: dict = {
             "level_name": self.__level_name,
             "datetime": datetime.now().strftime('%Y_%m_%d_%H_%M_%S'),
+            "deck": [card.to_save_data().__dict__ for card in self.__deck.get_cards()],
+            "inventory": [item.to_save_data().__dict__ for item in self.__inventory.get_items()],
             **self.__game_state.__dict__ # 나중에 고치시오
         }
         with open(
             os.path.join(path, f"{self.__level_name}_{datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}.json"), 
             "w", encoding="utf-8") as f:
             json.dump(tree, f)
-        raise NotImplementedError
 
     def get_game_draw_state(self) -> GameDrawState:
         """현재 게임 상태를 반환. 주로 초기화에 사용."""
@@ -178,6 +185,7 @@ class GameManager:
                 }.get(x),
             "get_card_data": cdm.get_card_data,
             "get_item_data": cdm.get_item_data,
+            "player_index": self.__deck.player_index, 
             "abs": abs,
             "len": len
         }
@@ -186,38 +194,122 @@ class GameManager:
         """효과 스크립팅에서 사용 가능한 정적 변수/함수 목록 반환(쓰기 전용)."""
         return {
             "modify_player_stat": self.modify_player_stat,
-            "add_item": self.add_item
+            "add_item": self.add_item,
+            "end_turn": self.end_turn,
+            "win_game": self.win_game
         }
     
-    def modify_player_stat(self, value_type: PlayerStat, amount: int) -> None:
+    def modify_player_stat(self, value_type: PlayerStat, amount: int, trigger_event =False) -> None:
         """해당 플레이어 능력치를 amount만큼 변화."""
-        raise NotImplementedError
+        previous = 0
+        current = 0
+        match (value_type):
+            case PlayerStat.Money:
+                previous = self.__game_state.player_money
+                self.__game_state.player_money = max(previous+amount, 0)
+                current = self.__game_state.player_money
+            case PlayerStat.Health:
+                previous = self.__game_state.player_health
+                self.__game_state.player_health = max(previous+amount, 0)
+                current = self.__game_state.player_health
+            case PlayerStat.Attack:
+                previous = self.__game_state.player_attack
+                self.__game_state.player_attack= max(previous+amount, 0)
+                current = self.__game_state.player_attack
+            case PlayerStat.Action:
+                previous = self.__game_state.player_action
+                self.__game_state.player_action= max(previous+amount, 0)
+                current = self.__game_state.player_action
+        if trigger_event:
+            self.__event_manager.on_player_stat_changed(value_type, previous, current )
 
     def add_item(self, item_data: ItemData, amount: int = 1):
         """인벤토리에 아이템을 amount개만큼 추가."""
         for i in range(amount):
             self.inventory.add_item(item_data)
 
-    def can_buy_card(self, id: int) -> bool:
+    def can_buy_card(self, card: Optional[Card]) -> bool:
         """해당 id의 카드를 구매할 수 있는지 검사."""
-        raise NotImplementedError
+        if card is None: return False
+        if card.card_data.type == CardType.Enemy:
+            return self.__game_state.player_health + self.__game_state.player_attack >= card.modified_cost
+        else:
+            return self.__game_state.player_money >= card.modified_cost
 
     def buy_card(self, id: int) -> None:
         """(가능하다면) 주어진 id의 카드를 구매함."""
-        raise NotImplementedError
+        if self.__game_state.player_remaining_action <= 0: return
+        card: Card = self.__deck.get_card_by_id(id)
+        if not self.can_buy_card(card): return
+        self.__game_state.player_remaining_action -= 1
+
+        match (card.card_data.type):
+            case CardType.Enemy:
+                if self.__game_state.player_attack >= card.modified_cost:
+                    previous: int = self.__game_state.player_attack
+                    self.__game_state.player_attack -= card.modified_cost
+                    self.__event_manager.on_player_stat_changed(
+                        PlayerStat.Attack, 
+                        previous,
+                        previous - card.modified_cost
+                    )
+                else:
+                    previous_atk = self.__game_state.player_attack
+                    previous_health = self.__game_state.player_health
+                    self.__game_state.player_health -= (card.modified_cost - self.__game_state.player_attack)
+                    self.__game_state.player_attack = 0
+                    self.__event_manager.on_player_stat_changed(
+                        PlayerStat.Attack,
+                        previous_atk, 0
+                    )
+                    self.__event_manager.on_player_stat_changed(
+                        PlayerStat.Health,
+                        previous_health,
+                        self.__game_state.player_health
+                    )
+            case _:
+                self.__game_state.player_money -= card.modified_cost
+        
+        self.__event_manager.on_card_purchased(card)
+        self.__event_manager.invoke_events(recursive=True)
 
     def can_use_item(self, id: int) -> bool:
         """해당 id의 아이템을 사용할 수 있는지 검사."""
-        raise NotImplementedError
+        items: List[Item] = self.__inventory.get_items(lambda x: x.id == id)
+        if len(items) == 0:
+            return False
+        # item: Item = items[0]
+        return True
+
     
     def use_item(self, id: int) -> None:
         """(가능하다면) 주어진 id의 아이템을 사용함."""
-        raise NotImplementedError
+        if self.__game_state.player_remaining_action <= 0: return
+        item: Item = self.__inventory.get_item_by_id(id)
+        if not self.can_use_item(id): return
+        self.__event_manager.on_item_used(item)
+        self.__event_manager.invoke_events(recursive=True)
 
-    def can_end_turn(self) -> bool:
-        """현재 턴을 넘길 수 있는 상태인지 검사."""
-        raise NotImplementedError
+    # def can_end_turn(self) -> bool:
+    #     """현재 턴을 넘길 수 있는 상태인지 검사."""
     
     def end_turn(self) -> None:
         """(가능하다면) 다음 턴으로 넘김."""
+        self.__event_manager.on_turn_end(self.__game_state.current_turn)
+        self.__event_manager.invoke_events(recursive=True)
+
+        self.__game_state.current_turn += 1
+        self.__game_state.player_remaining_action = self.__game_state.player_action
+        self.__game_state.player_attack = 0
+
+        self.__event_manager.on_turn_begin(self.__game_state.current_turn)
+        self.__event_manager.invoke_events(recursive=True)
+
+    def win_game(self) -> None:
+        """게임을 승리한 것으로 처리."""
         raise NotImplementedError
+
+    def lose_game(self) -> None:
+        """게임을 패배한 것으로 처리."""
+        raise NotImplementedError
+    
