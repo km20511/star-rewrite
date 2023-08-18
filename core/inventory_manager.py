@@ -2,9 +2,10 @@
 게임 내 인벤토리를 관리하는 스크립트.
 """
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from core.enums import DrawEventType
 
 from core.item import Item
-from core.obj_data_formats import ItemData, ItemSaveData
+from core.obj_data_formats import DrawEvent, ItemData, ItemSaveData
 from core.event_manager import EventManager
 from core.utils import Comparable
 
@@ -29,9 +30,16 @@ class Inventory:
             return None
         return items[0]
         
-    def add_item(self, item: ItemData):
+    def add_item(self, item_data: ItemData):
         """목록의 맨 끝에 아이템 추가."""
-        self.__items.append(Item(item))
+        item: Item = Item(item_data)
+        self.__items.append(item)
+        self.__event_manager.on_item_created(item)
+        self.__event_manager.push_draw_event(DrawEvent(
+            DrawEventType.ItemCreated,
+            item,
+            0, 0
+        ))
 
     def get_readable_static_table(self) -> Dict[str, Any]:
         """효과 스크립팅에서 사용 가능한 정적 변수/함수 목록 반환(읽기 전용)."""
@@ -57,6 +65,13 @@ class Inventory:
             if item.id in target_ids:
                 result.remove(item)
                 self.__event_manager.on_item_destroyed(item)
+                self.__event_manager.push_draw_event(DrawEvent(
+                    DrawEventType.ItemDestroyed,
+                    item,
+                    0, 0
+                ))
+                self.__event_manager.invoke_events(recursive=False)
+                item.unregister_event(self.__event_manager)
         self.__items = result
 
 

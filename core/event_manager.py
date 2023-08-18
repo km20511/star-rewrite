@@ -6,7 +6,7 @@ from core.card import Card
 from core.effect import Effect
 from core.game_manager import GameManager
 from core.item import Item
-from core.enums import EffectTarget, EventType
+from core.enums import DrawEventType, EffectTarget, EventType
 from core.event_handlers import (
     EventHandler0,
     EventHandlerBase,
@@ -14,7 +14,7 @@ from core.event_handlers import (
     EventHandler3,
     PlayerStat,
 )
-from core.obj_data_formats import EffectData
+from core.obj_data_formats import DrawEvent, EffectData
 
 
 class EventManager:
@@ -26,7 +26,9 @@ class EventManager:
         self.__on_card_entered_listeners: List[EventHandler1[Card]] = []
         self.__on_card_purchased_listeners: List[EventHandler1[Card]] = []
         self.__on_item_used_listeners: List[EventHandler1[Item]] = []
+        self.__on_card_created_listeners: List[EventHandler1[Card]] = []
         self.__on_card_destroyed_listeners: List[EventHandler1[Card]] = []
+        self.__on_item_created_listeners: List[EventHandler1[Item]] = []
         self.__on_item_destroyed_listeners: List[EventHandler1[Item]] = []
         self.__on_player_stat_changed_listeners: List[
             EventHandler3[PlayerStat, int, int]
@@ -42,7 +44,9 @@ class EventManager:
             EventType.OnEntered: self.__on_card_entered_listeners,
             EventType.OnPurchased: self.__on_card_purchased_listeners,
             EventType.OnUsed: self.__on_item_used_listeners,
+            EventType.OnCardCreated: self.__on_card_created_listeners,
             EventType.OnCardDestroyed: self.__on_card_destroyed_listeners,
+            EventType.OnItemCreated: self.__on_item_created_listeners,
             EventType.OnItemDestroyed: self.__on_item_destroyed_listeners,
             EventType.OnPlayerStatChanged: self.__on_player_stat_changed_listeners,
             EventType.OnTurnBegin: self.__on_turn_begin_listeners,
@@ -53,6 +57,7 @@ class EventManager:
         }
 
         self.__event_queue: List[Callable[[], None]] = []
+        self.__draw_event_queue: List[DrawEvent] = []
 
     def _compile_and_check(self, code: str) -> Optional[CodeType]:
         """해당 문자열을 compile하고 조건을 만족하는지 검사.
@@ -194,12 +199,12 @@ class EventManager:
 
         # 이게 맞나...?
         match (effect_data.event_type):
-            case EventType.OnShown | EventType.OnEntered | EventType.OnPurchased | EventType.OnCardDestroyed:
+            case EventType.OnShown | EventType.OnEntered | EventType.OnPurchased | EventType.OnCardCreated | EventType.OnCardDestroyed:
                 self.__listeners_table[effect_data.event_type].append(EventHandler1[Card](
                     effect_obj,
                     lambda gm, card: inner_func(gm, target=card)
                 ))
-            case EventType.OnUsed | EventType.OnItemDestroyed:
+            case EventType.OnUsed | EventType.OnItemCreated | EventType.OnItemDestroyed:
                 self.__listeners_table[effect_data.event_type].append(EventHandler1[Item](
                     effect_obj,
                     lambda gm, card: inner_func(gm, target=card)
@@ -245,6 +250,16 @@ class EventManager:
         """이벤트 구독자 목록 초기화."""
         self.__listeners_table[type].clear()
 
+    def push_draw_event(self, draw_state: DrawEvent):
+        """DrawEvent를 큐에 추가."""
+        self.__draw_event_queue.append(draw_state)
+
+    def get_draw_event(self) -> List[DrawEvent]:
+        """DrawEvent 큐의 모든 이벤트를 제거하고 반환."""
+        copied_queue: List[DrawEvent] = self.__draw_event_queue.copy()
+        self.__draw_event_queue.clear()
+        return copied_queue
+
     def on_card_shown(
         self, target: Card, immediate: bool = False
     ):
@@ -289,6 +304,17 @@ class EventManager:
             for listener in self.__on_item_used_listeners:
                 self.__event_queue.append(lambda: listener.invoke(self.__game_manager, target))
 
+    def on_card_created(
+        self, target: Card, immediate: bool = False
+    ):
+        """덱에서 카드가 생성되었을 때 이벤트 발생. immediate가 False인 경우 바로 실행하지 않고 이벤트 큐에 등록한다."""
+        if immediate:
+            for listener in self.__on_card_created_listeners:
+                listener.invoke(self.__game_manager, target)
+        else:
+            for listener in self.__on_card_created_listeners:
+                self.__event_queue.append(lambda: listener.invoke(self.__game_manager, target))
+
     def on_card_destroyed(
         self, target: Card, immediate: bool = False
     ):
@@ -298,6 +324,17 @@ class EventManager:
                 listener.invoke(self.__game_manager, target)
         else:
             for listener in self.__on_card_destroyed_listeners:
+                self.__event_queue.append(lambda: listener.invoke(self.__game_manager, target))
+
+    def on_item_created(
+        self, target: Item, immediate: bool = False
+    ):
+        """인벤토리에서 아이템이 생성되었을 때 이벤트 발생. immediate가 False인 경우 바로 실행하지 않고 이벤트 큐에 등록한다."""
+        if immediate:
+            for listener in self.__on_item_created_listeners:
+                listener.invoke(self.__game_manager, target)
+        else:
+            for listener in self.__on_item_created_listeners:
                 self.__event_queue.append(lambda: listener.invoke(self.__game_manager, target))
 
     def on_item_destroyed(

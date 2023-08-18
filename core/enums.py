@@ -46,6 +46,10 @@ class EventType(Enum):
     """카드를 구매했을 때(적의 경우 처치했을 때)  발동"""
     OnUsed = auto()
     """아이템을 사용했을 때 발동."""
+    OnCardCreated = auto()
+    """카드가 생성되었을 때 발동."""
+    OnItemCreated = auto()
+    """아이템이 생성되었을 때 발동."""
     OnCardDestroyed = auto()
     """카드가 파괴되었을 때 발동."""
     OnItemDestroyed = auto()
@@ -68,11 +72,13 @@ class DrawEventType(Enum):
     """게임 상태를 그릴 때 사용하는 이벤트의 종류."""
     TurnBegin = auto()
     TurnEnd = auto()
+    CardCreated = auto()
     CardShown = auto()
     CardMoved = auto()
     CardPurchased = auto()
     CardDestroyed = auto()
     CardCostChanged = auto()
+    ItemCreated = auto()
     ItemUsed = auto()
     ItemDestroyed = auto()
     PlayerWon = auto()

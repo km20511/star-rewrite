@@ -5,9 +5,10 @@ from random import shuffle
 from typing import Any, Dict, List, Callable, Optional, Set, Tuple
 
 from core.card import Card
+from core.enums import DrawEventType
 from core.event_manager import EventManager
 from core.utils import Comparable
-from core.obj_data_formats import CardData, CardSaveData
+from core.obj_data_formats import CardData, CardSaveData, DrawEvent
 
 
 class Deck:
@@ -52,6 +53,25 @@ class Deck:
                 # 더 나은 조건 검사 방법이 있을까?
                 if card.previous_index != ind:
                     self.__event_manager.on_card_moved(card, card.previous_index, ind)
+                    self.__event_manager.push_draw_event(DrawEvent(
+                        DrawEventType.CardMoved,
+                        card.id,
+                        card.previous_index,
+                        ind
+                    ))
+        # 플레이어 앞 3장의 카드를 공개.
+        for i in range(self.__player_index, min(len(self.__cards), self.__player_index + 3)):
+            card = self.__cards[i]
+            previous: bool = card.is_front_face
+            card.is_front_face = True
+            if not previous:
+                self.__event_manager.on_card_shown(card)
+            self.__event_manager.push_draw_event(DrawEvent(
+                DrawEventType.CardShown,
+                card.id,
+                int(previous),
+                1
+            ))
 
     def get_cards(self, query: Optional[Callable[[Card], bool]] = None) -> List[Card]:
         """조건에 맞는 카드를 순서를 유지해 반환."""
@@ -178,6 +198,12 @@ class Deck:
                 instance: Card = Card(card(c), i + index_offset)
                 for _ in range(amount(c)):
                     cards_copy.insert(i + index_offset, instance)
+                    self.__event_manager.on_card_created(instance)
+                    self.__event_manager.push_draw_event(DrawEvent(
+                        DrawEventType.CardCreated,
+                        instance.id,
+                        0, i + index_offset
+                    ))
                     index_offset += 1
                     if i < self.__player_index:
                         self.__player_index += 1
@@ -189,13 +215,23 @@ class Deck:
         """조건에 맞는 카드를 파괴. 구매/처치에 해당하지 않음."""
         target_ids: Set[int] = query.get_target_from(self.__cards)
         result: List[Card] = self.__cards.copy()
-        for k, v in enumerate(self.__cards):
-            if v.id not in target_ids:
+        for k, card in enumerate(self.__cards):
+            if card.id not in target_ids:
                 continue
             if k < self.__player_index:
                 self.__player_index -= 1
-            result.remove(v)
-            self.__event_manager.on_card_destroyed(v)
+            result.remove(card)
+            self.__event_manager.on_card_destroyed(card)
+            self.__event_manager.push_draw_event(DrawEvent(
+                DrawEventType.CardDestroyed,
+                card.id,
+                0, 0
+            ))
+        # 이벤트 등록 해제 전에 파괴 시 이벤트 발동
+        self.__event_manager.invoke_events(recursive=False)
+        for card in self.__cards:
+            if card.id in target_ids:
+                card.unregister_event(self.__event_manager)
         self.__cards = result
         self.update_index(init=False)
 
@@ -204,9 +240,16 @@ class Deck:
         target_ids: Set[int] = query.get_target_from(self.__cards)
         for card in self.__cards:
             if card.id in target_ids:
+                previous: bool = card.is_front_face
                 card.is_front_face = show(card)
-                if card.is_front_face:
+                if card.is_front_face and not previous:
                     self.__event_manager.on_card_shown(card)
+                self.__event_manager.push_draw_event(DrawEvent(
+                    DrawEventType.CardShown,
+                    card.id,
+                    int(previous),
+                    int(card.is_front_face)
+                ))
 
     def set_cost_mode(self, continuous: bool):
         """비용 설정 모드를 변경.

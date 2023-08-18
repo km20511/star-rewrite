@@ -10,12 +10,12 @@ from dataclasses import dataclass
 
 import core.card_data_manager as cdm
 from core.card import Card
-from core.enums import CardType, PlayerStat
+from core.enums import CardType, DrawEventType, PlayerStat
 from core.item import Item
 from core.deck_manager import Deck
 from core.inventory_manager import Inventory
 from core.event_manager import EventManager
-from core.obj_data_formats import CardData, CardDrawData, CardSaveData, GameDrawState, ItemData, ItemDrawData, ItemSaveData
+from core.obj_data_formats import CardData, CardDrawData, CardSaveData, DrawEvent, GameDrawState, ItemData, ItemDrawData, ItemSaveData
 
 
 # 상수
@@ -77,6 +77,8 @@ class GameManager:
 
         self.__deck: Deck = Deck(self.__event_manager, cards, game_state.player_index)
         self.__inventory: Inventory = Inventory(self.__event_manager, items)
+
+        self.__game_end: bool = False
 
     @property
     def level_name(self) -> str:
@@ -166,9 +168,9 @@ class GameManager:
             ) for item in self.__inventory.get_items()]
         )
 
-    def get_draw_events(self):
+    def get_draw_events(self) -> List[DrawEvent]:
         """이전 호출 이후로 생긴 게임 상태의 변화 등 이벤트의 목록을 반환."""
-        raise NotImplementedError
+        return self.__event_manager.get_draw_event()
 
     def get_readable_static_table(self) -> Dict[str, Any]:
         """효과 스크립팅에서 사용 가능한 정적 변수/함수 목록 반환(읽기 전용)."""
@@ -201,6 +203,7 @@ class GameManager:
     
     def modify_player_stat(self, value_type: PlayerStat, amount: int, trigger_event =False) -> None:
         """해당 플레이어 능력치를 amount만큼 변화."""
+        if self.__game_end: return
         previous = 0
         current = 0
         match (value_type):
@@ -221,16 +224,23 @@ class GameManager:
                 self.__game_state.player_action= max(previous+amount, 0)
                 current = self.__game_state.player_action
         if trigger_event:
-            self.__event_manager.on_player_stat_changed(value_type, previous, current )
+            self.__event_manager.on_player_stat_changed(value_type, previous, current)
+        self.__event_manager.push_draw_event(DrawEvent(
+            DrawEventType.PlayerStatChanged,
+            int(value_type),
+            previous,
+            current
+        ))
 
     def add_item(self, item_data: ItemData, amount: int = 1):
         """인벤토리에 아이템을 amount개만큼 추가."""
+        if self.__game_end: return
         for i in range(amount):
             self.inventory.add_item(item_data)
 
     def can_buy_card(self, card: Optional[Card]) -> bool:
         """해당 id의 카드를 구매할 수 있는지 검사."""
-        if card is None: return False
+        if self.__game_end or card is None: return False
         if card.card_data.type == CardType.Enemy:
             return self.__game_state.player_health + self.__game_state.player_attack >= card.modified_cost
         else:
@@ -238,7 +248,7 @@ class GameManager:
 
     def buy_card(self, id: int) -> None:
         """(가능하다면) 주어진 id의 카드를 구매함."""
-        if self.__game_state.player_remaining_action <= 0: return
+        if self.__game_end or self.__game_state.player_remaining_action <= 0: return
         card: Card = self.__deck.get_card_by_id(id)
         if not self.can_buy_card(card): return
         self.__game_state.player_remaining_action -= 1
@@ -272,9 +282,15 @@ class GameManager:
         
         self.__event_manager.on_card_purchased(card)
         self.__event_manager.invoke_events(recursive=True)
+        self.__event_manager.push_draw_event(DrawEvent(
+            DrawEventType.CardPurchased,
+            card,
+            0, 0
+        ))
 
     def can_use_item(self, id: int) -> bool:
         """해당 id의 아이템을 사용할 수 있는지 검사."""
+        if self.__game_end: return
         items: List[Item] = self.__inventory.get_items(lambda x: x.id == id)
         if len(items) == 0:
             return False
@@ -284,18 +300,29 @@ class GameManager:
     
     def use_item(self, id: int) -> None:
         """(가능하다면) 주어진 id의 아이템을 사용함."""
-        if self.__game_state.player_remaining_action <= 0: return
+        if self.__game_end or self.__game_state.player_remaining_action <= 0: return
         item: Item = self.__inventory.get_item_by_id(id)
         if not self.can_use_item(id): return
         self.__event_manager.on_item_used(item)
         self.__event_manager.invoke_events(recursive=True)
+        self.__event_manager.push_draw_event(DrawEvent(
+            DrawEventType.ItemUsed,
+            item,
+            0, 0
+        ))
 
     # def can_end_turn(self) -> bool:
     #     """현재 턴을 넘길 수 있는 상태인지 검사."""
     
     def end_turn(self) -> None:
         """(가능하다면) 다음 턴으로 넘김."""
+        if self.__game_end: return
         self.__event_manager.on_turn_end(self.__game_state.current_turn)
+        self.__event_manager.push_draw_event(DrawEvent(
+            DrawEventType.TurnEnd,
+            0, 0,
+            self.__game_state.current_turn
+        ))
         self.__event_manager.invoke_events(recursive=True)
 
         self.__game_state.current_turn += 1
@@ -303,13 +330,26 @@ class GameManager:
         self.__game_state.player_attack = 0
 
         self.__event_manager.on_turn_begin(self.__game_state.current_turn)
+        self.__event_manager.push_draw_event(DrawEvent(
+            DrawEventType.TurnBegin,
+            0, 0,
+            self.__game_state.current_turn
+        ))
         self.__event_manager.invoke_events(recursive=True)
 
     def win_game(self) -> None:
         """게임을 승리한 것으로 처리."""
-        raise NotImplementedError
+        self.__event_manager.push_draw_event(DrawEvent(
+            DrawEventType.PlayerWon,
+            0, 0, 0
+        ))
+        self.__game_end = True
 
     def lose_game(self) -> None:
         """게임을 패배한 것으로 처리."""
-        raise NotImplementedError
+        self.__event_manager.push_draw_event(DrawEvent(
+            DrawEventType.PlayerLost,
+            0, 0, 0
+        ))
+        self.__game_end = True
     
