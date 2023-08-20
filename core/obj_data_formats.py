@@ -71,6 +71,7 @@ class CardDrawData:
     type: CardType
     base_cost: int
     current_cost: int
+    is_front_face: bool
     sprite_name: str
     description: str
 

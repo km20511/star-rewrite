@@ -1,27 +1,30 @@
 """게임 진행 중 생기는 이벤트를 호출하고 관리하는 스크립트."""
 from types import CodeType
-from typing import Any, Callable, Dict, List, Optional, Set
+from typing import Any, Callable, Dict, List, Optional, TYPE_CHECKING
 
 from core.card import Card
-from core.effect import Effect
-from core.game_manager import GameManager
 from core.item import Item
-from core.enums import DrawEventType, EffectTarget, EventType
+from core.enums import EffectTarget, EventType, PlayerStat
 from core.event_handlers import (
-    EventHandler0,
     EventHandlerBase,
+    EventHandler0,
     EventHandler1,
     EventHandler3,
-    PlayerStat,
+    EventHandlerList,
+    EventHandlerType_co,
 )
 from core.obj_data_formats import DrawEvent, EffectData
+
+if TYPE_CHECKING:
+    from core.effect import Effect
+    from core.game_manager import GameManager
 
 
 class EventManager:
     """게임 내 이벤트를 호출하는 관리자."""
 
-    def __init__(self, game_manager: GameManager) -> None:
-        self.__game_manager: GameManager = game_manager
+    def __init__(self, game_manager: "GameManager") -> None:
+        self.__game_manager: "GameManager" = game_manager
         self.__on_card_shown_listeners: List[EventHandler1[Card]] = []
         self.__on_card_entered_listeners: List[EventHandler1[Card]] = []
         self.__on_card_purchased_listeners: List[EventHandler1[Card]] = []
@@ -39,7 +42,7 @@ class EventManager:
         self.__on_card_moved_listeners: List[EventHandler3[Card, int, int]] = []
         self.__on_calculate_card_cost: List[EventHandler0] = []
 
-        self.__listeners_table: Dict[EventType, List[EventHandlerBase]] = {
+        self.__listeners_table: Dict[EventType, EventHandlerList[EventHandlerType_co]] = {
             EventType.OnShown: self.__on_card_shown_listeners,
             EventType.OnEntered: self.__on_card_entered_listeners,
             EventType.OnPurchased: self.__on_card_purchased_listeners,
@@ -77,7 +80,7 @@ class EventManager:
                 )
         return result
 
-    def register_effect(self, effect_obj: Effect):
+    def register_effect(self, effect_obj: "Effect"):
         """주어진 효과 객체를 이벤트 목록에 등록.
         주의: 스크립트 해석 시 발생하는 오류가 그대로 발생함."""
         effect_data: EffectData = effect_obj.data
@@ -91,17 +94,8 @@ class EventManager:
         order_crop = self._compile_and_check(effect_data.order_crop)
         args = {k: self._compile_and_check(v) for k, v in effect_data.args.items()}
 
-        # 게임에 영향을 주지 않고 정보만 얻을 수 있는 참조.
-        readonlys: Dict[str, Any] = (
-            self.__game_manager.get_readable_static_table()
-            | self.__game_manager.deck.get_readable_static_table()
-            | self.__game_manager.inventory.get_readable_static_table()
-            | {"executer": effect_obj.owner}
-        )
-        writables: Dict[str, Any] = {}
-
         # 이벤트 발생 시마다 호출될 함수.
-        def inner_func(game_manager: GameManager, **kwargs):
+        def inner_func(game_manager: "GameManager", **kwargs):
             # 코드 단축용 함수.
             def eval_readonly_script(script, this):
                 temp_table = readonlys | kwargs
@@ -122,6 +116,13 @@ class EventManager:
                     ),
                 )
 
+        # 게임에 영향을 주지 않고 정보만 얻을 수 있는 참조.
+            readonlys: Dict[str, Any] = (
+                self.__game_manager.get_readable_static_table()
+                | self.__game_manager.deck.get_readable_static_table()
+                | self.__game_manager.inventory.get_readable_static_table()
+                | {"executer": effect_obj.owner}
+            )
             # 덱의 카드를 대상으로 하는 효과의 경우
             if effect_data.target == EffectTarget.Deck or (
                 effect_data.target != EffectTarget.Inventory
@@ -230,7 +231,7 @@ class EventManager:
                     lambda gm: inner_func(gm)
                 ))
 
-    def unregister_effect(self, effect: Effect):
+    def unregister_effect(self, effect: "Effect"):
         """주어진 효과 객체가 여기 등록되어 있다면 등록 해제."""
         target = tuple(filter(lambda x: x.owner == effect, self.__listeners_table[effect.data.event_type]))
         if len(target) > 0:

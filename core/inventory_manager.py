@@ -1,13 +1,15 @@
 """
 게임 내 인벤토리를 관리하는 스크립트.
 """
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
-from core.enums import DrawEventType
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, TYPE_CHECKING
 
 from core.item import Item
+from core.enums import DrawEventType
 from core.obj_data_formats import DrawEvent, ItemData, ItemSaveData
-from core.event_manager import EventManager
 from core.utils import Comparable
+
+if TYPE_CHECKING:
+    from core.event_manager import EventManager
 
 
 class Inventory:
@@ -15,8 +17,8 @@ class Inventory:
     게임 속 플레이어가 보유하고 있는 아이템이 나열된 인벤토리.
     아이템을 관리하고, 효과 스크립트가 아이템에 접근할 수 있는 기능 제공.
     """
-    def __init__(self, event_manager: EventManager, items: List[Tuple[ItemData, ItemSaveData]]) -> None:
-        self.__event_manager: EventManager = event_manager
+    def __init__(self, event_manager: "EventManager", items: List[Tuple[ItemData, ItemSaveData]]) -> None:
+        self.__event_manager: "EventManager" = event_manager
         self.__items: List[Item] = [Item.from_save_data(data, save).register_event(event_manager) for data, save in items]
 
     def get_items(self, query: Optional[Callable[[Item], bool]] = None) -> List[Item]:
@@ -37,7 +39,7 @@ class Inventory:
         self.__event_manager.on_item_created(item)
         self.__event_manager.push_draw_event(DrawEvent(
             DrawEventType.ItemCreated,
-            item,
+            item.id,
             0, 0
         ))
 
@@ -67,7 +69,7 @@ class Inventory:
                 self.__event_manager.on_item_destroyed(item)
                 self.__event_manager.push_draw_event(DrawEvent(
                     DrawEventType.ItemDestroyed,
-                    item,
+                    item.id,
                     0, 0
                 ))
                 self.__event_manager.invoke_events(recursive=False)

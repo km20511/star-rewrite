@@ -15,7 +15,10 @@ from core.item import Item
 from core.deck_manager import Deck
 from core.inventory_manager import Inventory
 from core.event_manager import EventManager
-from core.obj_data_formats import CardData, CardDrawData, CardSaveData, DrawEvent, GameDrawState, ItemData, ItemDrawData, ItemSaveData
+from core.obj_data_formats import (
+    CardData, CardDrawData, CardSaveData, DrawEvent, 
+    GameDrawState, ItemData, ItemDrawData, ItemSaveData
+)
 
 
 # 상수
@@ -157,6 +160,7 @@ class GameManager:
                 card.card_data.type,
                 card.card_data.cost,
                 card.modified_cost,
+                card.is_front_face,
                 card.card_data.sprite_name,
                 card.card_data.description
             ) for card in self.__deck.get_cards()],
@@ -227,7 +231,7 @@ class GameManager:
             self.__event_manager.on_player_stat_changed(value_type, previous, current)
         self.__event_manager.push_draw_event(DrawEvent(
             DrawEventType.PlayerStatChanged,
-            int(value_type),
+            value_type.value,
             previous,
             current
         ))
@@ -249,8 +253,8 @@ class GameManager:
     def buy_card(self, id: int) -> None:
         """(가능하다면) 주어진 id의 카드를 구매함."""
         if self.__game_end or self.__game_state.player_remaining_action <= 0: return
-        card: Card = self.__deck.get_card_by_id(id)
-        if not self.can_buy_card(card): return
+        card: Optional[Card] = self.__deck.get_card_by_id(id)
+        if card is None or not self.can_buy_card(card): return
         self.__game_state.player_remaining_action -= 1
 
         match (card.card_data.type):
@@ -284,13 +288,13 @@ class GameManager:
         self.__event_manager.invoke_events(recursive=True)
         self.__event_manager.push_draw_event(DrawEvent(
             DrawEventType.CardPurchased,
-            card,
+            card.id,
             0, 0
         ))
 
     def can_use_item(self, id: int) -> bool:
         """해당 id의 아이템을 사용할 수 있는지 검사."""
-        if self.__game_end: return
+        if self.__game_end: return False
         items: List[Item] = self.__inventory.get_items(lambda x: x.id == id)
         if len(items) == 0:
             return False
@@ -301,13 +305,13 @@ class GameManager:
     def use_item(self, id: int) -> None:
         """(가능하다면) 주어진 id의 아이템을 사용함."""
         if self.__game_end or self.__game_state.player_remaining_action <= 0: return
-        item: Item = self.__inventory.get_item_by_id(id)
-        if not self.can_use_item(id): return
+        item: Optional[Item] = self.__inventory.get_item_by_id(id)
+        if item is None or not self.can_use_item(id): return
         self.__event_manager.on_item_used(item)
         self.__event_manager.invoke_events(recursive=True)
         self.__event_manager.push_draw_event(DrawEvent(
             DrawEventType.ItemUsed,
-            item,
+            item.id,
             0, 0
         ))
 

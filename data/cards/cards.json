@@ -184,7 +184,7 @@
                     "effect": "modify_value(value_type = ValueType.Cost, amount = -3)",
                     "target": "Deck",
                     "query": "this.type == CardType.Enemy && this.is_front",
-                    "order_by": {"method": "distance(this, executer)", "crop": 2},
+                    "order_by": {"method": "distance(this, executer)", "crop": "2"},
                     "event_type": "on_bought"
                 },
                 {

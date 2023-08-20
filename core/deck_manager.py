@@ -2,14 +2,15 @@
 게임 내 덱을 관리하는 스크립트.
 """
 from random import shuffle
-from typing import Any, Dict, List, Callable, Optional, Set, Tuple
+from typing import Any, Dict, List, Callable, Optional, Set, Tuple, TYPE_CHECKING
 
 from core.card import Card
 from core.enums import DrawEventType
-from core.event_manager import EventManager
 from core.utils import Comparable
 from core.obj_data_formats import CardData, CardSaveData, DrawEvent
 
+if TYPE_CHECKING:
+    from core.event_manager import EventManager
 
 class Deck:
     """
@@ -17,8 +18,8 @@ class Deck:
     이 게임에서는 플레이어가 활동하는 전장의 역할도 한다.
     덱에 있는 카드를 관리하고, 효과 스크립트가 조건에 맞게 카드를 조작할 수 있는 메소드를 제공한다.
     """
-    def __init__(self, event_manager: EventManager, cards: List[Tuple[CardData, CardSaveData]], player_index: int = 0) -> None:
-        self.__event_manager: EventManager = event_manager
+    def __init__(self, event_manager: "EventManager", cards: List[Tuple[CardData, CardSaveData]], player_index: int = 0) -> None:
+        self.__event_manager: "EventManager" = event_manager
         self.__cards = [Card.from_save_data(data, save).register_event(event_manager) for data, save in cards]
         self.__player_index: int = player_index
         self.__cost_setters: List[Tuple["DeckQuery", Callable[[Card], int]]] = []
