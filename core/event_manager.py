@@ -1,12 +1,11 @@
 """게임 진행 중 생기는 이벤트를 호출하고 관리하는 스크립트."""
 from types import CodeType
-from typing import Any, Callable, Dict, List, Optional, Set
+from typing import Any, Callable, Dict, List, Optional, TYPE_CHECKING
 
 from core.card import Card
 from core.effect import Effect
-from core.game_manager import GameManager
 from core.item import Item
-from core.enums import DrawEventType, EffectTarget, EventType
+from core.enums import EffectTarget, EventType
 from core.event_handlers import (
     EventHandler0,
     EventHandlerBase,
@@ -16,12 +15,14 @@ from core.event_handlers import (
 )
 from core.obj_data_formats import DrawEvent, EffectData
 
+if TYPE_CHECKING:
+    from core.game_manager import GameManager
 
 class EventManager:
     """게임 내 이벤트를 호출하는 관리자."""
 
-    def __init__(self, game_manager: GameManager) -> None:
-        self.__game_manager: GameManager = game_manager
+    def __init__(self, game_manager: "GameManager") -> None:
+        self.__game_manager: "GameManager" = game_manager
         self.__on_card_shown_listeners: List[EventHandler1[Card]] = []
         self.__on_card_entered_listeners: List[EventHandler1[Card]] = []
         self.__on_card_purchased_listeners: List[EventHandler1[Card]] = []
@@ -101,7 +102,7 @@ class EventManager:
         writables: Dict[str, Any] = {}
 
         # 이벤트 발생 시마다 호출될 함수.
-        def inner_func(game_manager: GameManager, **kwargs):
+        def inner_func(game_manager: "GameManager", **kwargs):
             # 코드 단축용 함수.
             def eval_readonly_script(script, this):
                 temp_table = readonlys | kwargs

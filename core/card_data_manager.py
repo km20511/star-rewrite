@@ -88,8 +88,8 @@ def initialize() -> None:
                 EffectTarget[effect["target"]],
                 effect["query"] if "query" in effect else "",
                 effect["order_by"]["method"] if "order_by" in effect else "",
-                effect["order_by"]["crop"] if "order_by" in effect else -1,
-                effect["args"]
+                effect["order_by"]["crop"] if "order_by" in effect else "-1",
+                effect["args"] if "args" in effect else {}
             )
 
     # 카드 데이터 폴더 내 모든 json 파일 읽기

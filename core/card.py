@@ -1,5 +1,4 @@
 """ 덱의 카드를 표현하는 객체를 구현한 스크립트. """
-from typing import Callable
 from core.effect import Effect, EffectHolder
 from core.obj_data_formats import CardData, CardSaveData
 

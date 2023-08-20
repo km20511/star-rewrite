@@ -2,8 +2,9 @@
 카드나 아이템, 그리고 이 외의 잔류 효과 구현에 필요한 Effect 클래스와 EffectHolder 클래스, 그리고 여기에 사용되는 enum들을 구현한 스크립트.
 """
 from uuid import uuid4
-from typing import List
-from core.event_manager import EventManager
+from typing import List, TYPE_CHECKING
+if TYPE_CHECKING:
+    from core.event_manager import EventManager
 
 from core.obj_data_formats import EffectData
 
@@ -31,11 +32,11 @@ class Effect:
     def data(self) -> EffectData:
         return self.__data
 
-    def register_event(self, event_manager: EventManager):
+    def register_event(self, event_manager: "EventManager"):
         """이 객체 효과를 EventManager에 등록."""
         event_manager.register_effect(self)
 
-    def unregister_event(self, event_manager: EventManager):
+    def unregister_event(self, event_manager: "EventManager"):
         """이 객체가 EventManager에 등록되어 있다면 등록 해제."""
         event_manager.unregister_effect(self)
     
@@ -72,13 +73,13 @@ class EffectHolder:
         if effect in self.__effects:
             self.__effects.remove(effect)
 
-    def register_event(self, event_manager: EventManager):
+    def register_event(self, event_manager: "EventManager"):
         """이 객체 효과를 EventManager에 등록."""
         for effect in self.__effects:
             effect.register_event(event_manager)
         return self
 
-    def unregister_event(self, event_manager: EventManager):
+    def unregister_event(self, event_manager: "EventManager"):
         """이 객체가 EventManager에 등록되어 있다면 등록 해제."""
         for effect in self.__effects:
             effect.unregister_event(event_manager)
