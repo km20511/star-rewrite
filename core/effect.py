@@ -3,19 +3,19 @@
 """
 from uuid import uuid4
 from typing import List, TYPE_CHECKING
+
 if TYPE_CHECKING:
     from core.event_manager import EventManager
-
-from core.obj_data_formats import EffectData
+    from core.obj_data_formats import EffectData
 
 class Effect:
     """
     json에서 데이터로 기술된 효과를 구현하며, EffectHolder 객체에 붙여 사용함.
     """
-    def __init__(self, owner: "EffectHolder", data: EffectData) -> None:
+    def __init__(self, owner: "EffectHolder", data: "EffectData") -> None:
         self.__id: int = uuid4().int
         self.__owner: EffectHolder = owner
-        self.__data: EffectData = data
+        self.__data: "EffectData" = data
 
     def __eq__(self, __value: object) -> bool:
         return isinstance(__value, Effect) and self.id == __value.id
@@ -29,7 +29,7 @@ class Effect:
         return self.__owner
     
     @property
-    def data(self) -> EffectData:
+    def data(self) -> "EffectData":
         return self.__data
 
     def register_event(self, event_manager: "EventManager"):

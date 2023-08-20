@@ -59,7 +59,7 @@ def _parse_effect_list(effects: List[dict]) -> List[EffectData]:
                 raw_data["target"],
                 raw_data["query"]              if "query"      in raw_data else "",
                 raw_data["order_by"]["method"] if "order_by"   in raw_data else "",
-                raw_data["order_by"]["crop"]   if "order_by"   in raw_data else -1,
+                raw_data["order_by"]["crop"]   if "order_by"   in raw_data else "-1",
                 {}
             ))
     return result
@@ -103,7 +103,6 @@ def initialize() -> None:
             tree_cards: dict = json.load(f)
 
         for card in tree_cards["contents"]:
-            print(f"Debug: {card['name']}")
             __db_cards[card["id"]] = CardData(
                 card["id"],
                 card["name"],

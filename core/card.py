@@ -32,12 +32,20 @@ class Card(EffectHolder):
     def current_index(self):
         """ 카드가 현재 덱에서 자리하고 있는 위치. """
         return self.__current_index
+
+    @current_index.setter
+    def current_index(self, value: int):
+        self.__current_index = value
     
     @property
     def previous_index(self):
         """ 카드가 직전 상태에서 덱에 자리하고 있던 위치. """
         return self.__previous_index
     
+    @previous_index.setter
+    def previous_index(self, value: int):
+        self.__current_index = value
+
     @property
     def modified_cost(self):
         """ 효과 등을 반영해 실제로 적용되는 카드의 비용(적 카드의 경우 체력). """
