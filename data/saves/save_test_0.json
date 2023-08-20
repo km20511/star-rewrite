@@ -1,6 +1,7 @@
 {
     "level_name": "모험의 시작",
-    "current_turn": 0,
+    "datetime": "2023_08_20_21_50_34",
+    "current_turn": 1,
     "player_money": 10,
     "player_health": 5,
     "player_action": 3,

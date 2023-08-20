@@ -103,7 +103,6 @@ def initialize() -> None:
             tree_cards: dict = json.load(f)
 
         for card in tree_cards["contents"]:
-            print(f"Debug: {card['name']}")
             __db_cards[card["id"]] = CardData(
                 card["id"],
                 card["name"],
