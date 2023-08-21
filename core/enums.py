@@ -71,16 +71,54 @@ class EventType(Enum):
 class DrawEventType(Enum):
     """게임 상태를 그릴 때 사용하는 이벤트의 종류."""
     TurnBegin = auto()
+    """새 턴이 시작됨.
+    current: 현재 턴."""
     TurnEnd = auto()
+    """현재 턴이 종료됨.
+    current: 현재 턴."""
     CardCreated = auto()
+    """카드가 새로 생성됨.
+    target: 생성된 카드 id.
+    current: 생성된 인덱스.
+    TODO: 데이터 넘길 방법 고민하기"""
     CardShown = auto()
+    """카드가 공개되거나 숨겨짐.
+    target: 해당 카드 id.
+    previous: 기존 앞면 여부(0/1)
+    current: 현재 앞면 여부(0/1)"""
     CardMoved = auto()
+    """카드가 이동함.
+    target: 해당 카드 id.
+    previous: 기존 인덱스.
+    current: 현재 인덱스."""
     CardPurchased = auto()
+    """카드가 구매됨.
+    target: 해당 카드 id."""
     CardDestroyed = auto()
+    """카드가 파괴됨.
+    target: 해당 카드 id."""
     CardCostChanged = auto()
+    """카드 비용이 변화함.
+    target: 해당 카드 id.
+    previous: 이전 비용.
+    current: 현재 비용.
+    TODO: 이거 호출하기"""
     ItemCreated = auto()
+    """아이템이 새로 생성됨.
+    target: 생성된 아이템 id.
+    TODO: 마찬가지로 데이터 전달 방식 고민."""
     ItemUsed = auto()
+    """아이템이 사용됨.
+    target: 해당 아이템 id."""
     ItemDestroyed = auto()
+    """아이템이 파괴됨.
+    target: 해당 아이템 id."""
     PlayerWon = auto()
+    """플레이어가 승리함."""
     PlayerLost = auto()
+    """플레이어가 패배함."""
     PlayerStatChanged = auto()
+    """플레이어 상태가 변화함.
+    target: 해당 상태의 PlayerType(int).
+    previous: 해당 상태의 이전 값.
+    current: 해당 상태의 현재 값."""

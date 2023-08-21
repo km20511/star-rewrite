@@ -25,8 +25,7 @@ class Deck:
         self.__cost_setters: List[Tuple["DeckQuery", Callable[[Card], int]]] = []
         self.__cost_modifiers: List[Tuple["DeckQuery", Callable[[Card], int]]] = []
         self.__continuous_cost_mode: bool = False
-        for ind, card in enumerate(self.__cards):
-            card.set_index(ind, init = True)
+        self.update_index(init=True)
 
     @property
     def player_index(self):
@@ -141,7 +140,6 @@ class Deck:
     def shift_cards(self, query: "DeckQuery", shift: int):
         """
         조건에 맞는 카드를 주어진 수만큼 이동시킴.
-        TODO: player_index 대응
         """
         if shift == 0 or query is None:
             return

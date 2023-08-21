@@ -83,6 +83,8 @@ class GameManager:
 
         self.__game_end: bool = False
 
+        self.start_game()
+
     @property
     def level_name(self) -> str:
         """현재 게임 레벨의 이름."""
@@ -114,18 +116,33 @@ class GameManager:
             tree: dict = json.load(f)
 
         state: GameState = GameState()
+        if "current_turn" in tree: state.current_turn = tree["current_turn"]
         if "player_money" in tree: state.player_money = tree["player_money"]
         if "player_health" in tree: state.player_health = tree["player_health"]
         if "player_index" in tree: state.player_index = tree["player_index"]
         if "player_attack" in tree: state.player_attack = tree["player_attack"]
-        if "player_action" in tree: 
-            state.player_action = tree["player_action"]
+        if "player_action" in tree: state.player_action = tree["player_action"]
+        if "player_remaining_action" in tree:
             state.player_remaining_action = tree["player_action"]
 
         card_saves = [CardSaveData(**save_obj) for save_obj in tree["deck"]]
         item_saves = [ItemSaveData(**save_obj) for save_obj in tree["inventory"]]
         return GameManager(state, tree["level_name"], card_saves, item_saves)
 
+    def start_game(self):
+        """초기화 메소드 직후에 호출되어 게임 시작 시의 로직을 수행."""
+        if self.__game_state.current_turn == 0:
+            self.__game_state.current_turn += 1
+            self.__game_state.player_remaining_action = self.__game_state.player_action
+            self.__game_state.player_attack = 0
+
+            self.__event_manager.on_turn_begin(self.__game_state.current_turn)
+            self.__event_manager.push_draw_event(DrawEvent(
+                DrawEventType.TurnBegin,
+                0, 0,
+                self.__game_state.current_turn
+            ))
+            self.__event_manager.invoke_events(recursive=True)
 
     def save(self, path: str) -> None:
         """현재 게임 상태를 주어진 경로의 폴더에 저장."""
@@ -245,6 +262,7 @@ class GameManager:
     def can_buy_card(self, card: Optional[Card]) -> bool:
         """해당 id의 카드를 구매할 수 있는지 검사."""
         if self.__game_end or card is None: return False
+        if not card.is_front_face: return False
         if card.card_data.type == CardType.Enemy:
             return self.__game_state.player_health + self.__game_state.player_attack >= card.modified_cost
         else:

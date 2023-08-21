@@ -4,6 +4,7 @@
     "player_money": 10,
     "player_health": 5,
     "player_action": 3,
+    "player_remaining_action": 3,
     "player_index": 0,
     "player_attack":0,
     "deck": [

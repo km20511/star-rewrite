@@ -1,15 +1,23 @@
+from functools import reduce
 import os
 import cmd
 import sys
 import json
 from pprint import pprint
 from datetime import datetime
-from typing import IO, Final, List
+from typing import IO, Dict, Final, List, Literal
 
 from core import GameManager
+from core.enums import CardType, DrawEventType
 
 LEVEL_PATH: Final[str] = "data/levels"
 SAVES_PATH: Final[str] = "data/saves"
+
+CARDTYPE_REPR: Final[Dict[CardType, str]] = {
+    CardType.Enemy: "적",
+    CardType.Item: "아이템",
+    CardType.Event: "사건"
+}
 
 def select_input(
         question: str,
@@ -47,6 +55,26 @@ def select_input(
             return int(answer) - 1
         print(on_invalid)
 
+def align_korean(
+        text: str, 
+        total_length: int, 
+        align: Literal["l", "c", "r"] = "l", 
+        fill: str = " "
+    ):
+    """한글의 글자폭을 2칸으로 계산해 터미널에서 정렬이 맞도록 함.
+    주의: total_length가 계산된 길이보다 짧으면 입력 문자열 그대로 반환.
+    주의: fill 문자 및 한글 이외의 문자는 1칸으로 전제함."""
+    length: int = reduce(lambda a, b: (a+2 if '가' <= b <= '힣' else a+1), text, 0)
+    if length >= total_length: 
+        return text
+    num_fill: int = total_length - length
+    match (align):
+        case "l":
+            return text + fill*num_fill
+        case "r":
+            return fill*num_fill + text
+        case "c":
+            return fill*(num_fill//2) + text + fill*(num_fill-num_fill//2)
 
 class Shell(cmd.Cmd):
     """CLI 게임을 진행하는 셸."""
@@ -54,18 +82,19 @@ class Shell(cmd.Cmd):
     prompt: str = "(명령을 입력하세요): "
 
     def __init__(self, completekey: str = "tab", stdin: IO[str] | None = None, stdout: IO[str] | None = None) -> None:
-        print(f"""\
-Star Rewrite CLI에 오신 것을 환영합니다!
-help 또는 ?를 입력하면 도움말을 볼 수 있습니다.
-아래 목록에서 시작할 게임을 선택하세요.""")
+        print(
+            "Star Rewrite CLI에 오신 것을 환영합니다!"
+            "help 또는 ?를 입력하면 도움말을 볼 수 있습니다."
+            "아래 목록에서 시작할 게임을 선택하세요."
+        )
 
         levels: List[str] = [i for i in os.listdir(LEVEL_PATH) if i.endswith(".json")]
         saves: List[str] = [i for i in os.listdir(SAVES_PATH) if i.endswith(".json")]
 
         if len(levels) + len(saves) == 0:
-            print(f"""사용 가능한 파일이 없습니다. 아래 폴더에 최소 하나 이상의 json이 필요합니다.
-{LEVEL_PATH}
-{SAVES_PATH}""")
+            print(
+                "사용 가능한 파일이 없습니다. 아래 폴더에 최소 하나 이상의 json이 필요합니다.",
+                LEVEL_PATH, SAVES_PATH, sep="\n")
             sys.exit()
 
         option_list: List[str] = ["" for _ in range(len(levels) + len(saves))]
@@ -118,20 +147,47 @@ help 또는 ?를 입력하면 도움말을 볼 수 있습니다.
     def do_state(self, args):
         """현재 게임 상태를 출력합니다(디버그용)."""
         self.game_state = self.game.get_game_draw_state()
-        print((
+        print(
             f"======== 게임 정보 ========\n"
             f"이야기 : {self.level_name}\t\t{self.game_state.current_turn} 턴\n"
             f"======== 플레이어 ========\n"
             f"돈: {self.game_state.player_money}\t 체력: {self.game_state.player_health}\t"
             f"공격력: {self.game_state.player_attack}\t 행동: {self.game_state.player_remaining_action}"
-        ))
-        pprint(self.game_state)
+        )
+        # pprint(self.game_state)
 
-    def do_deck(self, args):
-        """현재 덱을 출력합니다."""
+    def do_deck(self, args: str):
+        """현재 덱을 출력합니다.
+        --debug 옵션으로 앞면 여부에 상관없이 카드를 볼 수 있습니다."""
         result: str = "(순번, 이름, 유형, 비용)\n"
+        debug: bool = "--debug" in args
         for ind, card in enumerate(self.game_state.deck):
-            result += f"{ind:>2d} {card.name:20s}\t{card.type.name:>5s} {card.current_index:>2d} {card.previous_index:>2d} {f'*{card.modified_cost}*' if card.modified_cost != card.cost else f'{card.modified_cost}':>4s}\n"
+            result += (f"{ind:>2d}) "
+                       f"""{align_korean(card.name, 30) 
+                            if debug or card.is_front_face 
+                            else '???'+' '*27}\t"""
+                       f"{align_korean(CARDTYPE_REPR[card.type], 6, align='r')}\t"
+                       f"""{(f'*{card.current_cost}*' 
+                            if card.current_cost != card.base_cost
+                            else f'{card.current_cost}')
+                            if debug or card.is_front_face else '???':>4s}\n"""
+                    )
+        print(result)
+
+    def do_inventory(self, args):
+        """현재 인벤토리를 출력합니다."""
+        if len(self.game_state.inventory) == 0:
+            print("보유한 아이템이 없습니다.")
+            return
+        result: str = "(순번, 이름)\n"
+        for ind, item in enumerate(self.game_state.inventory):
+            result += (f"{ind:>2d}) {align_korean(item.name, 30)}")
+
+    def do_buy(self, args: str):
+        """주어진 번호의 카드를 구매합니다."""
+        if not (args.isdigit() and 0 <= int(args) < len(self.game_state.deck)):
+            print("덱 카드의 번호 중 하나를 입력하세요.")
+            return
 
     def do_drawevents(self, args):
         """현재 처리하지 않은 DrawEvent들을 출력합니다(디버그용)."""
@@ -142,6 +198,45 @@ help 또는 ?를 입력하면 도움말을 볼 수 있습니다.
         return True
 
     do_quit = do_exit
+
+    def process_draw_events(self):
+        """처리하지 않은 DrawEvent를 처리."""
+        events = self.game.get_draw_events()
+        while len(events) > 0:
+            event = events.pop(0)
+            match (event.event_type):
+                case DrawEventType.TurnBegin:
+                    print(f"{event.current}번째 턴입니다.")
+                    self.game_state.current_turn = event.current
+                case DrawEventType.TurnEnd:
+                    pass
+                case DrawEventType.CardCreated:
+                    raise NotImplementedError
+                case DrawEventType.CardShown:
+                    raise NotImplementedError
+                case DrawEventType.CardMoved:
+                    raise NotImplementedError
+                case DrawEventType.CardPurchased:
+                    raise NotImplementedError
+                case DrawEventType.CardDestroyed:
+                    raise NotImplementedError
+                case DrawEventType.CardCostChanged:
+                    raise NotImplementedError
+                case DrawEventType.ItemCreated:
+                    raise NotImplementedError
+                case DrawEventType.ItemUsed:
+                    raise NotImplementedError
+                case DrawEventType.ItemDestroyed:
+                    raise NotImplementedError
+                case DrawEventType.PlayerWon:
+                    raise NotImplementedError
+                case DrawEventType.PlayerLost:
+                    raise NotImplementedError
+                case DrawEventType.PlayerStatChanged:
+                    raise NotImplementedError
+
+
+        raise NotImplementedError
 
 
 if __name__ == "__main__":
