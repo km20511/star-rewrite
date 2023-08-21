@@ -253,6 +253,7 @@ class EventManager:
 
     def push_draw_event(self, draw_state: DrawEvent):
         """DrawEvent를 큐에 추가."""
+        print(f"Debug: DrawEvent Pushed {draw_state}")
         self.__draw_event_queue.append(draw_state)
 
     def get_draw_event(self) -> List[DrawEvent]:

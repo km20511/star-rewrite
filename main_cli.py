@@ -39,7 +39,7 @@ def select_input(
 
     while True:
         answer = input(prompt)
-        if answer.strip().lower() in ("quit", "exit"):
+        if allow_exit and answer.strip().lower() in ("quit", "exit"):
             return -2
         if allow_value and answer in options:
             return options.index(answer)
@@ -69,6 +69,7 @@ help 또는 ?를 입력하면 도움말을 볼 수 있습니다.
             sys.exit()
 
         option_list: List[str] = ["" for _ in range(len(levels) + len(saves))]
+        level_names: List[str] = option_list.copy()
         option_index: int = 0
 
         print("="*20)
@@ -79,6 +80,7 @@ help 또는 ?를 입력하면 도움말을 볼 수 있습니다.
             level_name: str = tree["level_name"]
             print(f" {option_index + 1}) {level_name}")
             option_list[option_index] = filename
+            level_names[option_index] = level_name
             option_index += 1
         
         print("="*20)
@@ -92,6 +94,7 @@ help 또는 ?를 입력하면 도움말을 볼 수 있습니다.
                             if "datetime" in tree else "----/--/-- --:--:--")
             print(f" {option_index + 1}) {filename}\t{level_name}\t{date}")
             option_list[option_index] = filename
+            level_names[option_index] = level_name
             option_index += 1
         print("="*20)
 
@@ -99,17 +102,36 @@ help 또는 ?를 입력하면 도움말을 볼 수 있습니다.
         if selected == -2:
             print("프로그램을 종료합니다.")
             sys.exit()
+
         self.game = GameManager.create_from_file(
             os.path.join(
                 LEVEL_PATH if selected < len(levels) else SAVES_PATH, option_list[selected]
             )
         )
+        self.game_state = self.game.get_game_draw_state()
+        self.level_name = level_names[selected]
+
+        self.intro = f"""게임을 시작합니다."""
         
         super().__init__(completekey, stdin, stdout)
 
     def do_state(self, args):
         """현재 게임 상태를 출력합니다(디버그용)."""
-        pprint(self.game.get_game_draw_state())
+        self.game_state = self.game.get_game_draw_state()
+        print((
+            f"======== 게임 정보 ========\n"
+            f"이야기 : {self.level_name}\t\t{self.game_state.current_turn} 턴\n"
+            f"======== 플레이어 ========\n"
+            f"돈: {self.game_state.player_money}\t 체력: {self.game_state.player_health}\t"
+            f"공격력: {self.game_state.player_attack}\t 행동: {self.game_state.player_remaining_action}"
+        ))
+        pprint(self.game_state)
+
+    def do_deck(self, args):
+        """현재 덱을 출력합니다."""
+        result: str = "(순번, 이름, 유형, 비용)\n"
+        for ind, card in enumerate(self.game_state.deck):
+            result += f"{ind:>2d} {card.name:20s}\t{card.type.name:>5s} {card.current_index:>2d} {card.previous_index:>2d} {f'*{card.modified_cost}*' if card.modified_cost != card.cost else f'{card.modified_cost}':>4s}\n"
 
     def do_drawevents(self, args):
         """현재 처리하지 않은 DrawEvent들을 출력합니다(디버그용)."""

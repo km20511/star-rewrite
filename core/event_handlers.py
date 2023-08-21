@@ -4,9 +4,11 @@ from typing import Callable, List, Protocol, TypeVar, Generic, TYPE_CHECKING
 
 from core.card import Card
 from core.item import Item
-from core.effect import Effect
 from core.enums import PlayerStat
-from core.game_manager import GameManager
+
+if TYPE_CHECKING:
+    from core.effect import Effect
+    from core.game_manager import GameManager
 
 
 # 이벤트 인수용 타입 변수 (확장 시 타입 추가 바람.)
@@ -18,11 +20,11 @@ V = TypeVar("V", Card, Item, PlayerStat, int)
 
 class EventHandlerBase():
     """이벤트 클래스의 기본 형태."""
-    def __init__(self, owner: Effect) -> None:
-        self.__owner: Effect = owner
+    def __init__(self, owner: "Effect") -> None:
+        self.__owner: "Effect" = owner
 
     @property
-    def owner(self) -> Effect:
+    def owner(self) -> "Effect":
         return self.__owner
 
 EventHandlerType_co = TypeVar("EventHandlerType_co", bound=EventHandlerBase, contravariant=True)
@@ -39,7 +41,7 @@ class EventHandlerList(Protocol[EventHandlerType_co]):
 
 class EventHandler0(EventHandlerBase):
     """인수 없는 이벤트 클래스."""
-    def __init__(self, owner: Effect, listener: Callable[["GameManager"], None]) -> None:
+    def __init__(self, owner: "Effect", listener: Callable[["GameManager"], None]) -> None:
         super().__init__(owner)
         self.__listener: Callable[["GameManager"], None] = listener
 
@@ -49,7 +51,7 @@ class EventHandler0(EventHandlerBase):
 
 class EventHandler1(EventHandlerBase, Generic[T]):
     """인수 1개의 이벤트 클래스."""
-    def __init__(self, owner: Effect, listener: Callable[["GameManager", T], None]) -> None:
+    def __init__(self, owner: "Effect", listener: Callable[["GameManager", T], None]) -> None:
         super().__init__(owner)
         self.__listener: Callable[["GameManager", T], None] = listener
 
@@ -59,7 +61,7 @@ class EventHandler1(EventHandlerBase, Generic[T]):
 
 class EventHandler2(EventHandlerBase, Generic[T, U]):
     """인수 2개의 이벤트 클래스."""
-    def __init__(self, owner: Effect, listener: Callable[["GameManager", T, U], None]) -> None:
+    def __init__(self, owner: "Effect", listener: Callable[["GameManager", T, U], None]) -> None:
         super().__init__(owner)
         self.__listener: Callable[["GameManager", T, U], None] = listener
 
@@ -69,7 +71,7 @@ class EventHandler2(EventHandlerBase, Generic[T, U]):
 
 class EventHandler3(EventHandlerBase, Generic[T, U, V]):
     """인수 3개의 이벤트 클래스."""
-    def __init__(self, owner: Effect, listener: Callable[["GameManager", T, U, V], None]) -> None:
+    def __init__(self, owner: "Effect", listener: Callable[["GameManager", T, U, V], None]) -> None:
         super().__init__(owner)
         self.__listener: Callable[["GameManager", T, U, V], None] = listener
 
