@@ -20,7 +20,7 @@ class Deck:
     """
     def __init__(self, event_manager: "EventManager", cards: List[Tuple[CardData, CardSaveData]], player_index: int = 0) -> None:
         self.__event_manager: "EventManager" = event_manager
-        self.__cards = [Card.from_save_data(data, save).register_event(event_manager) for data, save in cards]
+        self.__cards = [Card.from_save_data(data, save, index).register_event(event_manager) for index, (data, save) in enumerate(cards)]
         self.__player_index: int = player_index
         self.__cost_setters: List[Tuple["DeckQuery", Callable[[Card], int]]] = []
         self.__cost_modifiers: List[Tuple["DeckQuery", Callable[[Card], int]]] = []
@@ -66,12 +66,12 @@ class Deck:
             card.is_front_face = True
             if not previous:
                 self.__event_manager.on_card_shown(card)
-            self.__event_manager.push_draw_event(DrawEvent(
-                DrawEventType.CardShown,
-                card.id,
-                int(previous),
-                1
-            ))
+                self.__event_manager.push_draw_event(DrawEvent(
+                    DrawEventType.CardShown,
+                    card.id,
+                    int(previous),
+                    1
+                ))
 
     def get_cards(self, query: Optional[Callable[[Card], bool]] = None) -> List[Card]:
         """조건에 맞는 카드를 순서를 유지해 반환."""
@@ -241,14 +241,15 @@ class Deck:
             if card.id in target_ids:
                 previous: bool = card.is_front_face
                 card.is_front_face = show(card)
-                if card.is_front_face and not previous:
-                    self.__event_manager.on_card_shown(card)
-                self.__event_manager.push_draw_event(DrawEvent(
-                    DrawEventType.CardShown,
-                    card.id,
-                    int(previous),
-                    int(card.is_front_face)
-                ))
+                if card.is_front_face ^ previous:
+                    if card.is_front_face:
+                        self.__event_manager.on_card_shown(card)
+                    self.__event_manager.push_draw_event(DrawEvent(
+                        DrawEventType.CardShown,
+                        card.id,
+                        int(previous),
+                        int(card.is_front_face)
+                    ))
 
     def set_cost_mode(self, continuous: bool):
         """비용 설정 모드를 변경.

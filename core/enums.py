@@ -114,7 +114,8 @@ class DrawEventType(Enum):
     """아이템이 파괴됨.
     target: 해당 아이템 id."""
     PlayerWon = auto()
-    """플레이어가 승리함."""
+    """플레이어가 승리함.
+    TODO: 승리/패배 유형 전달."""
     PlayerLost = auto()
     """플레이어가 패배함."""
     PlayerStatChanged = auto()
