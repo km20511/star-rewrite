@@ -1,6 +1,6 @@
 """게임 진행 중 생기는 이벤트를 호출하고 관리하는 스크립트."""
 from types import CodeType
-from typing import Any, Callable, Dict, List, Optional, TYPE_CHECKING
+from typing import Any, Callable, Dict, List, Optional, TYPE_CHECKING, Tuple
 
 from core.card import Card
 from core.item import Item
@@ -13,7 +13,7 @@ from core.event_handlers import (
     EventHandlerList,
     EventHandlerType_co,
 )
-from core.obj_data_formats import DrawEvent, EffectData
+from core.obj_data_formats import CardDrawData, DrawEvent, EffectData, ItemDrawData
 
 if TYPE_CHECKING:
     from core.effect import Effect
@@ -60,7 +60,7 @@ class EventManager:
         }
 
         self.__event_queue: List[Callable[[], None]] = []
-        self.__draw_event_queue: List[DrawEvent] = []
+        self.__draw_event_queue: List[DrawEvent | Tuple[CardDrawData, int] | ItemDrawData] = []
 
     def _compile_and_check(self, code: str) -> Optional[CodeType]:
         """해당 문자열을 compile하고 조건을 만족하는지 검사.
@@ -251,13 +251,13 @@ class EventManager:
         """이벤트 구독자 목록 초기화."""
         self.__listeners_table[type].clear()
 
-    def push_draw_event(self, draw_state: DrawEvent):
+    def push_draw_event(self, draw_state: DrawEvent | Tuple[CardDrawData, int] | ItemDrawData):
         """DrawEvent를 큐에 추가."""
         self.__draw_event_queue.append(draw_state)
 
-    def get_draw_event(self) -> List[DrawEvent]:
+    def get_draw_event(self) -> List[DrawEvent | Tuple[CardDrawData, int] | ItemDrawData]:
         """DrawEvent 큐의 모든 이벤트를 제거하고 반환."""
-        copied_queue: List[DrawEvent] = self.__draw_event_queue.copy()
+        copied_queue: List[DrawEvent | Tuple[CardDrawData, int] | ItemDrawData] = self.__draw_event_queue.copy()
         self.__draw_event_queue.clear()
         return copied_queue
 

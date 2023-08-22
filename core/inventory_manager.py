@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, List, Optional, Set, Tuple, TYPE_CHECKIN
 
 from core.item import Item
 from core.enums import DrawEventType
-from core.obj_data_formats import DrawEvent, ItemData, ItemSaveData
+from core.obj_data_formats import DrawEvent, ItemData, ItemDrawData, ItemSaveData
 from core.utils import Comparable
 
 if TYPE_CHECKING:
@@ -37,10 +37,11 @@ class Inventory:
         item: Item = Item(item_data)
         self.__items.append(item)
         self.__event_manager.on_item_created(item)
-        self.__event_manager.push_draw_event(DrawEvent(
-            DrawEventType.ItemCreated,
+        self.__event_manager.push_draw_event(ItemDrawData(
             item.id,
-            0, 0
+            item.item_data.name,
+            item.item_data.sprite_name,
+            item.item_data.description
         ))
 
     def get_readable_static_table(self) -> Dict[str, Any]:

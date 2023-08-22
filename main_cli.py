@@ -9,6 +9,7 @@ from typing import IO, Dict, Final, List, Literal
 
 from core import GameManager
 from core.enums import CardType, DrawEventType, PlayerStat
+from core.obj_data_formats import CardDrawData, DrawEvent, ItemDrawData
 
 LEVEL_PATH: Final[str] = "data/levels"
 SAVES_PATH: Final[str] = "data/saves"
@@ -175,7 +176,7 @@ class Shell(cmd.Cmd):
                     )
         print(result)
 
-    def do_inventory(self, args):
+    def do_inventory(self, args) -> None:
         """현재 인벤토리를 출력합니다."""
         if len(self.game_state.inventory) == 0:
             print("보유한 아이템이 없습니다.")
@@ -183,6 +184,25 @@ class Shell(cmd.Cmd):
         result: str = "(순번, 이름)\n"
         for ind, item in enumerate(self.game_state.inventory):
             result += (f"{ind:>2d}) {align_korean(item.name, 30)}")
+    
+    def do_card(self, args: str) -> None:
+        """해당 번호의 카드 정보를 봅니다."""
+        if not (args.isdigit() and 0 <= int(args) < len(self.game_state.deck)):
+            print("덱 카드의 번호 중 하나를 입력하세요.")
+            return
+        card = self.game_state.deck[int(args)]
+        if not card.is_front_face:
+            print("이 운명은 아직 알 수 없습니다.")
+            return
+        print(
+            "======== 카드 정보 ========\n"
+            f"이름: {card.name}\n"
+            f"기본 비용: {card.base_cost}\t현재 비용: {card.current_cost}\n"
+            f"유형: {CARDTYPE_REPR[card.type]}\n"
+            f"{card.description}\n"
+            "========================="
+        )
+
 
     def do_buy(self, args: str):
         """주어진 번호의 카드를 구매합니다."""
@@ -216,75 +236,81 @@ class Shell(cmd.Cmd):
                 return item
         return None
 
-    def process_draw_events(self):
+    def process_draw_events(self) -> bool:
         """처리하지 않은 DrawEvent를 처리."""
         events = self.game.get_draw_events()
         while len(events) > 0:
             event = events.pop(0)
-            match (event.event_type):
-                case DrawEventType.TurnBegin:
-                    print(f"{event.current}번째 턴입니다.")
-                    self.game_state.current_turn = event.current
-                case DrawEventType.TurnEnd:
-                    pass
-                case DrawEventType.CardCreated:
-                    raise NotImplementedError
-                case DrawEventType.CardShown:
-                    shown_events = [event]
-                    while len(events) > 0 and events[0].event_type == DrawEventType.CardShown:
-                        shown_events.append(events.pop(0))
-                    print("다음 카드가 공개됨: ")
-                    for event in shown_events:
+            if isinstance(event, DrawEvent):
+                match (event.event_type):
+                    case DrawEventType.TurnBegin:
+                        print(f"{event.current}번째 턴입니다.")
+                        self.game_state.current_turn = event.current
+                    case DrawEventType.TurnEnd:
+                        pass
+                    case DrawEventType.CardCreated:
+                        pass # DrawEvent가 아닌 (CardDrawData, int)가 들어오는 경우 처리.
+                    case DrawEventType.CardShown:
                         card = self._search_card_by_id(event.target_id)
                         if card is not None:
                             card.is_front_face = bool(event.current)
                             if event.current:
-                                print(f" {card.name}")
-                case DrawEventType.CardMoved:
-                    moved_events = [event]
-                    while len(events) > 0 and events[0].event_type == DrawEventType.CardMoved:
-                        moved_events.append(events.pop(0))
+                                print(f"카드 공개됨: {card.name}")
+                    case DrawEventType.CardMoved:
+                        moved_events = [event]
+                        while len(events) > 0 and isinstance(events[0], DrawEvent) and events[0].event_type == DrawEventType.CardMoved:
+                            moved_events.append(events[0])
+                            events.pop(0)
 
-                    new_card_list = [None for _ in range(len(self.game_state.deck))]
-                    for index, card in enumerate(self.game_state.deck):
-                        for moved_event in moved_events:
-                            if card.id == moved_event.target_id:
-                                new_card_list[moved_event.current] = card
-                                break
-                        else:
-                            new_card_list[index] = card
-                    self.game_state.deck = new_card_list
-                case DrawEventType.CardPurchased:
-                    print(f"카드를 구매했습니다: {self._search_card_by_id(event.target_id).name}")
-                case DrawEventType.CardDestroyed:
-                    card = self._search_card_by_id(event.target_id)
-                    if card is not None:
-                        self.game_state.deck.remove(card)
-                case DrawEventType.CardCostChanged:
-                    raise NotImplementedError
-                case DrawEventType.ItemCreated:
-                    raise NotImplementedError
-                case DrawEventType.ItemUsed:
-                    print(f"아이템을 사용했습니다: {self._search_item_by_id(event.target_id)}")
-                case DrawEventType.ItemDestroyed:
-                    item = self._search_item_by_id(event.target_id)
-                    if item is not None:
-                        self.game_state.inventory.remove(item)
-                case DrawEventType.PlayerWon:
-                    print("승리! 목적을 달성했습니다!")
-                    return True
-                case DrawEventType.PlayerLost:
-                    print("패배! some text goes here.")
-                    return True
-                case DrawEventType.PlayerStatChanged:
-                    # match (PlayerStat(event.target_id)):
-                    #     case PlayerStat.Money:
-                    delta: int = event.current - event.previous
-                    print(
-                        f"수치 변화: {PlayerStat(event.target_id).name},"
-                        f" {event.previous} -> {event.current}"
-                        f" ({'+' if delta > 0 else '-'}{abs(delta)})"
-                    )
+                        new_card_list: List[CardDrawData | None] = [None for _ in range(len(self.game_state.deck))]
+                        for index, card in enumerate(self.game_state.deck):
+                            for moved_event in moved_events:
+                                if card.id == moved_event.target_id:
+                                    new_card_list[moved_event.current] = card
+                                    break
+                            else:
+                                new_card_list[index] = card
+                        self.game_state.deck = [card for card in new_card_list if card is not None]
+                    case DrawEventType.CardPurchased:
+                        print(f"카드를 구매했습니다: {self._search_card_by_id(event.target_id).name}")
+                    case DrawEventType.CardDestroyed:
+                        card = self._search_card_by_id(event.target_id)
+                        if card is not None:
+                            self.game_state.deck.remove(card)
+                    case DrawEventType.CardCostChanged:
+                        raise NotImplementedError
+                    case DrawEventType.ItemCreated:
+                        pass # DrawEvent가 아닌 ItemDrawData가 들어오는 경우 처리.
+                    case DrawEventType.ItemUsed:
+                        print(f"아이템을 사용했습니다: {self._search_item_by_id(event.target_id)}")
+                    case DrawEventType.ItemDestroyed:
+                        item = self._search_item_by_id(event.target_id)
+                        if item is not None:
+                            self.game_state.inventory.remove(item)
+                    case DrawEventType.PlayerWon:
+                        print("승리! 목적을 달성했습니다!")
+                        return True
+                    case DrawEventType.PlayerLost:
+                        print("패배! some text goes here.")
+                        return True
+                    case DrawEventType.PlayerStatChanged:
+                        # match (PlayerStat(event.target_id)):
+                        #     case PlayerStat.Money:
+                        delta: int = event.current - event.previous
+                        print(
+                            f"수치 변화: {PlayerStat(event.target_id).name},"
+                            f" {event.previous} -> {event.current}"
+                            f" ({'+' if delta > 0 else '-'}{abs(delta)})"
+                        )
+            elif isinstance(event, ItemDrawData):
+                # 아이템 생성 이벤트.
+                print(f"아이템 생성됨: {event.name}")
+                self.game_state.inventory.append(event)
+            else:
+                # Tuple[CardDrawData, int]. 카드 생성 이벤트.
+                print(f"카드 생성됨: {event[0].name}")
+                self.game_state.deck.insert(event[1], event[0])
+        return False
 
 
 if __name__ == "__main__":

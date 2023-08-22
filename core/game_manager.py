@@ -189,7 +189,7 @@ class GameManager:
             ) for item in self.__inventory.get_items()]
         )
 
-    def get_draw_events(self) -> List[DrawEvent]:
+    def get_draw_events(self) -> List[DrawEvent | Tuple[CardDrawData, int] | ItemDrawData]:
         """이전 호출 이후로 생긴 게임 상태의 변화 등 이벤트의 목록을 반환."""
         return self.__event_manager.get_draw_event()
 

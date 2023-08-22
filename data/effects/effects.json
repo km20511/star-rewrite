@@ -63,7 +63,7 @@
             "id": "REWARD_MONEY",
             "event_type": "OnPurchased",
             "effect": "modify_player_stat(PLAYER_MONEY, amount)",
-            "target": "Deck",
+            "target": "Executer",
             "query": "this == target",
             "args": {"amount": "0"}
         },
@@ -71,7 +71,7 @@
             "id": "REWARD_HEALTH",
             "event_type": "OnPurchased",
             "effect": "modify_player_stat(PLAYER_HEALTH, amount)",
-            "target": "Deck",
+            "target": "Executer",
             "query": "this == target",
             "args": {"amount": "0"}
         },
@@ -79,7 +79,7 @@
             "id": "REWARD_ATTACK",
             "event_type": "OnPurchased",
             "effect": "modify_player_stat(PLAYER_ATTACK, amount)",
-            "target": "Deck",
+            "target": "Executer",
             "query": "this == target",
             "args": {"amount": "0"}
         },
@@ -87,7 +87,7 @@
             "id": "REWARD_ITEM",
             "event_type": "OnPurchased",
             "effect": "add_item(get_item_data(item_id), amount)",
-            "target": "Deck",
+            "target": "Executer",
             "query": "this == target",
             "args": {"item_id": "0", "amount": "1"}
         },

@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Callable, Optional, Set, Tuple, TYPE_CHECKIN
 from core.card import Card
 from core.enums import DrawEventType
 from core.utils import Comparable
-from core.obj_data_formats import CardData, CardSaveData, DrawEvent
+from core.obj_data_formats import CardData, CardDrawData, CardSaveData, DrawEvent
 
 if TYPE_CHECKING:
     from core.event_manager import EventManager
@@ -198,11 +198,16 @@ class Deck:
                 for _ in range(amount(c)):
                     cards_copy.insert(i + index_offset, instance)
                     self.__event_manager.on_card_created(instance)
-                    self.__event_manager.push_draw_event(DrawEvent(
-                        DrawEventType.CardCreated,
-                        instance.id,
-                        0, i + index_offset
-                    ))
+                    self.__event_manager.push_draw_event((CardDrawData(
+                        c.id,
+                        c.card_data.name,
+                        c.card_data.type,
+                        c.card_data.cost,
+                        c.modified_cost,
+                        c.is_front_face,
+                        c.card_data.sprite_name,
+                        c.card_data.description
+                    ), i + index_offset))
                     index_offset += 1
                     if i < self.__player_index:
                         self.__player_index += 1
@@ -292,7 +297,7 @@ class Deck:
         else:
             self.__cost_setters.append((query, amount))
 
-    def apply_cost_modifier(self):
+    def apply_cost_modifier(self) -> None:
         """등록된 함수를 이용해 카드의 비용을 일괄적으로 계산하고 함수 목록을 초기화."""
         # 비용 초기화
         for card in self.__cards:
