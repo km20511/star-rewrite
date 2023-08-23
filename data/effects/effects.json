@@ -95,7 +95,7 @@
             "id": "DESTROY_ON_PURCHASED",
             "event_type": "OnPurchased",
             "effect": "destroy_cards()",
-            "target": "Deck",
+            "target": "Executer",
             "query": "this == target"
         },
         {

@@ -310,6 +310,9 @@ class GameManager:
         self.__event_manager.on_card_purchased(card)
         self.__event_manager.invoke_events(recursive=True)
 
+        if self.__game_state.player_remaining_action <= 0:
+            self.end_turn()
+
     def can_use_item(self, id: int) -> bool:
         """해당 id의 아이템을 사용할 수 있는지 검사."""
         if self.__game_end: return False
@@ -332,6 +335,9 @@ class GameManager:
         ))
         self.__event_manager.on_item_used(item)
         self.__event_manager.invoke_events(recursive=True)
+
+        if self.__game_state.player_remaining_action <= 0:
+            self.end_turn()
 
     # def can_end_turn(self) -> bool:
     #     """현재 턴을 넘길 수 있는 상태인지 검사."""

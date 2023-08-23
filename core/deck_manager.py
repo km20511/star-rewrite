@@ -28,14 +28,14 @@ class Deck:
         self.update_index(init=True)
 
     @property
-    def player_index(self):
+    def player_index(self) -> int:
         """
         플레이어가 덱에 위치하는 인덱스.
         이를 기반으로 카드의 시간대 등을 결정한다.
         """
         return self.__player_index
 
-    def update_index(self, init: bool = False):
+    def update_index(self, init: bool = False) -> None:
         """
         카드에 저장된 인덱스 데이터 갱신. 
         :param init: 초기화/이동 여부.
@@ -119,9 +119,11 @@ class Deck:
         """이 덱을 대상으로 하는 DeckQuery 객체 생성."""
         return DeckQuery(self)
     
-    def shuffle_cards(self, query: "DeckQuery"):
+    def shuffle_cards(self, query: "DeckQuery") -> None:
         """조건에 맞는 카드를 서로 섞음."""
         target_ids: Set[int] = query.get_target_from(self.__cards)
+        if len(target_ids) == 0:
+            return
         mask: List[bool] = [card.id in target_ids for card in self.__cards]
         target: List[Card] = [card for ind, card in enumerate(self.__cards) if mask[ind]]
         shuffled_target: List[Card] = target.copy()
@@ -137,21 +139,23 @@ class Deck:
         self.__cards = result 
         self.update_index(init = False)
 
-    def shift_cards(self, query: "DeckQuery", shift: int):
+    def shift_cards(self, query: "DeckQuery", shift: int) -> None:
         """
         조건에 맞는 카드를 주어진 수만큼 이동시킴.
         """
         if shift == 0 or query is None:
             return
         
+        target_ids: Set[int] = query.get_target_from(self.__cards)
+        if len(target_ids) == 0: 
+            return
+
         # 이동의 대상이 되는 카드 목록.
         target: List[Card] = []
         # 이동 대상이 아닌 카드 목록.
         non_target: List[Card] = []
         # 이동 대상 카드들의 인덱스.
         index_table: List[int] = []
-
-        target_ids: Set[int] = query.get_target_from(self.__cards)
 
         for k, v in enumerate(self.__cards):
             if v.id in target_ids:
@@ -184,10 +188,13 @@ class Deck:
         ]
         self.__cards = result
         self.update_index(init=False)
-
-    def insert_cards(self, query: "DeckQuery", card: Callable[[Card], CardData], amount: Callable[[Card], int]):
+    
+    
+    def insert_cards(self, query: "DeckQuery", card: Callable[[Card], CardData], amount: Callable[[Card], int]) -> None:
         """조건에 맞는 카드의 왼쪽에 새로운 카드 추가."""
         target_ids: Set[int] = query.get_target_from(self.__cards)
+        if len(target_ids) == 0:
+            return
         cards_copy = self.__cards.copy()
         # 추가로 인한 인덱스 오차 보정
         index_offset: int = 0
@@ -215,9 +222,11 @@ class Deck:
         self.__cards = cards_copy
         self.update_index(init=False)
     
-    def destroy_cards(self, query: "DeckQuery"):
+    def destroy_cards(self, query: "DeckQuery") -> None:
         """조건에 맞는 카드를 파괴. 구매/처치에 해당하지 않음."""
         target_ids: Set[int] = query.get_target_from(self.__cards)
+        if len(target_ids) == 0:
+            return
         result: List[Card] = self.__cards.copy()
         for k, card in enumerate(self.__cards):
             if card.id not in target_ids:
@@ -239,9 +248,11 @@ class Deck:
         self.__cards = result
         self.update_index(init=False)
 
-    def show_cards(self, query: "DeckQuery", show: Callable[[Card], bool]):
+    def show_cards(self, query: "DeckQuery", show: Callable[[Card], bool]) -> None:
         """조건에 맞는 카드를 공개(앞면)/비공개(뒷면) 처리."""
         target_ids: Set[int] = query.get_target_from(self.__cards)
+        if len(target_ids) == 0:
+            return
         for card in self.__cards:
             if card.id in target_ids:
                 previous: bool = card.is_front_face

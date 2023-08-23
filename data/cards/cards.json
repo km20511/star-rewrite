@@ -161,9 +161,6 @@
                 {
                     "base_id": "REWARD_ITEM",
                     "args": {"item_id": "8", "amount": "1"}
-                },
-                {
-                    "base_id": "DESTROY_ON_PURCHASED"
                 }
             ]
         },
@@ -178,7 +175,7 @@
                 {
                     "effect": "modify_value(value_type = ValueType.Health, amount = -3)",
                     "target": "Executer",
-                    "event_type": "on_bought"
+                    "event_type": "OnPurchased"
                 },
                 {
                     "effect": "modify_value(value_type = ValueType.Cost, amount = -3)",
@@ -188,7 +185,7 @@
                         "method": "distance(this, executer)",
                         "crop": "2"
                     },
-                    "event_type": "on_bought"
+                    "event_type": "OnPurchased"
                 },
                 {
                     "base_id": "DESTROY_ON_PURCHASED"
