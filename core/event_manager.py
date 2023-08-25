@@ -292,7 +292,7 @@ class EventManager:
                 listener.invoke(self.__game_manager, target)
         else:
             for listener in self.__on_card_purchased_listeners:
-                print(f"Debug: {listener.owner.owner}, {listener.owner.data.query}, {listener.owner.data.effect}")
+                # print(f"Debug: {listener.owner.owner}, {listener.owner.data.query}, {listener.owner.data.effect}")
                 self.__event_queue.append(lambda: listener.invoke(self.__game_manager, target))
 
     def on_item_used(

@@ -1,11 +1,22 @@
+from typing import List
+
 import pyglet
 
+from gui.scenes import Scene, IntroScene
 
-def main():
-    res_w: int = 1280
-    res_h: int = 720
+FONTS_PATH: str = "data/fonts"
 
-    app_window = pyglet.window.Window(res_w, res_h, caption="Star Rewrite")
+def main() -> None:
+
+    pyglet.font.add_directory(FONTS_PATH)
+
+    app_window = pyglet.window.Window(caption="Star Rewrite", resizable=True)
+    # app_window.set_fullscreen(True)
+
+    scenes: List[Scene] = [
+        IntroScene(app_window)
+    ]
+    scenes[0].load()
     
     pyglet.app.run()
 
