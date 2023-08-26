@@ -1,16 +1,20 @@
-from typing import Callable, TypeVar, Generic, Protocol
+from typing import Callable, TypeVar, Generic, Protocol, runtime_checkable
 
 from gui.utils import clamp
 
-class Transitionable(Protocol):
-    def __add__(self, other):
-        pass
-    def __sub__(self, other):
-        pass
-    def __mul__(self, other: float):
-        pass
+# class _SupportsManualCalc(Protocol):
+#     def __add__(self, other):
+#         pass
+#     def __sub__(self, other):
+#         pass
+#     def __mul__(self, other: float):
+#         pass
 
-_T_Transitionable = TypeVar("_T_Transitionable", bound=Transitionable)
+_T_Transitionable = TypeVar("_T_Transitionable", "_SupportsLerp", float)
+class _SupportsLerp(Protocol):
+    @staticmethod
+    def lerp(a:_T_Transitionable, b:_T_Transitionable, t: float) ->_T_Transitionable:
+        pass
 
 def ease_out_expo(t: float) -> float:
     """지수함수를 이용한 ease out 전이 함수.
@@ -40,7 +44,12 @@ class Transition(Generic[_T_Transitionable]):
 
     def _lerp(self, a: _T_Transitionable, b: _T_Transitionable, t: float) -> _T_Transitionable:
         """전용 선형 보간 함수."""
-        return (b-a)*t + a
+        # if isinstance(a, _SupportsLerp):
+        #     return a.lerp(a, b, t)
+        # return (b-a)*t + a
+        if isinstance(a, float) and isinstance(b, float):
+            return (b-a)*t + a
+        return a.lerp(a, b, t)
 
     def start(self, current_time: float, duration: float = -1, reset: bool = True):
         """주어진 시간을 토대로 전이를 실행.

@@ -5,7 +5,7 @@ import pyglet
 from gui.utils import lerp
 
 
-class Scene:
+class Scene(pyglet.event.EventDispatcher):
     """게임에서 사용할 장면의 부모 클래스. 인트로(게임 선택), 메인 화면 등이 예."""
 
     match_w_h: float = 0.5
@@ -23,9 +23,11 @@ class Scene:
         def on_resize(w: int, h: int) -> None:
             self.on_resize_window(w, h)
             print(f"resized: {w}, {h}")
+        pyglet.clock.schedule_interval(self.on_update_scene, 1/30)
 
     def unload(self):
         """저장된 Window 객체에서 이 Scene을 삭제. 다른 Scene으로 전환하기 전 호출할 것."""
+        pyglet.clock.unschedule(self.on_update_scene)
 
     def on_resize_window(self, w: int, h: int) -> None:
         """
@@ -38,3 +40,9 @@ class Scene:
             match_w_h: 가로 혹은 세로 변화율의 반영 비율. 0에 가까울수록 가로가, 1에 가까울수록 세로가 더 많이 반영됨."""
         
         self.scale_factor = math.exp(lerp(math.log(w / self.ref_w), math.log(h / self.ref_h), self.match_w_h))
+
+    def on_update_scene(self, dt):
+        self.dispatch_event("on_scene_updated", dt)
+
+
+Scene.register_event_type("on_scene_updated")

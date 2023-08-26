@@ -1,5 +1,5 @@
 from typing import Tuple
-from gui.utils import clamp
+from gui.utils import clamp, lerp
 
 
 class Color:
@@ -28,6 +28,26 @@ class Color:
     def tuple_256(self) -> Tuple[int, int, int, int]:
         """[0, 255] 사이의 정수 성분의 Tuple로 변환."""
         return int(self.r * 255), int(self.g * 255), int(self.b * 255), int(self.a * 255)
+
+    @staticmethod
+    def lerp(a: "Color", b: "Color", t: float) -> "Color":
+        return Color(
+            lerp(a.r, b.r, t),
+            lerp(a.g, b.g, t),
+            lerp(a.b, b.b, t),
+            lerp(a.a, b.a, t)
+        )
+
+    @staticmethod
+    def white() -> "Color":
+        return Color(1.0, 1.0, 1.0, 1.0)
+
+    @staticmethod
+    def black() -> "Color":
+        return Color(0.0, 0.0, 0.0, 1.0)
+
+    def __repr__(self) -> str:
+        return f"Color({self.r}, {self.g}, {self.b}, {self.a})"
 
     def __add__(self, other: "Color"):
         return Color(
