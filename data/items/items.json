@@ -18,8 +18,7 @@
                 {
                     "base_id": "REWARD_MONEY",
                     "args": {"amount": "3"},
-                    "event_type": "OnUsed",
-                    "target": "Inventory"
+                    "event_type": "OnUsed"
                 }
             ]
         },
@@ -32,8 +31,7 @@
                 {
                     "base_id": "REWARD_ATTACK",
                     "args": {"amount": "2"},
-                    "event_type": "OnUsed",
-                    "target": "Inventory"
+                    "event_type": "OnUsed"
                 }
             ]
         }

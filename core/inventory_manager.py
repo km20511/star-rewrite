@@ -34,7 +34,7 @@ class Inventory:
         
     def add_item(self, item_data: ItemData):
         """목록의 맨 끝에 아이템 추가."""
-        item: Item = Item(item_data)
+        item: Item = Item(item_data).register_event(self.__event_manager)
         self.__items.append(item)
         self.__event_manager.on_item_created(item)
         self.__event_manager.push_draw_event(ItemDrawData(

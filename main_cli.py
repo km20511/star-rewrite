@@ -184,6 +184,7 @@ class Shell(cmd.Cmd):
         result: str = "(순번, 이름)\n"
         for ind, item in enumerate(self.game_state.inventory):
             result += (f"{ind:>2d}) {align_korean(item.name, 30)}")
+        print(result)
     
     def do_card(self, args: str) -> None:
         """해당 번호의 카드 정보를 봅니다."""
@@ -203,6 +204,18 @@ class Shell(cmd.Cmd):
             "========================="
         )
 
+    def do_item(self, args: str):
+        """해당 번호의 아이템 정보를 봅니다."""
+        if not (args.isdigit() and 0 <= int(args) < len(self.game_state.inventory)):
+            print("아이템 번호 중 하나를 입력하세요.")
+            return
+        item = self.game_state.inventory[int(args)]
+        print(
+            "======== 아이템 정보 ========\n"
+            f"이름: {item.name}\n"
+            f"{item.description}\n"
+            "========================="
+        )
 
     def do_buy(self, args: str):
         """주어진 번호의 카드를 구매합니다."""
@@ -210,6 +223,14 @@ class Shell(cmd.Cmd):
             print("덱 카드의 번호 중 하나를 입력하세요.")
             return
         self.game.buy_card(self.game_state.deck[int(args)].id)
+        self.process_draw_events()
+
+    def do_use(self, args: str):
+        """주어진 번호의 아이템을 사용 합니다."""
+        if not (args.isdigit() and 0 <= int(args) < len(self.game_state.inventory)):
+            print("아이템 번호 중 하나를 입력하세요.")
+            return
+        self.game.use_item(self.game_state.inventory[int(args)].id)
         self.process_draw_events()
 
     def do_drawevents(self, args):
@@ -278,11 +299,19 @@ class Shell(cmd.Cmd):
                         if card is not None:
                             self.game_state.deck.remove(card)
                     case DrawEventType.CardCostChanged:
-                        raise NotImplementedError
+                        card = self._search_card_by_id(event.target_id)
+                        if card is not None:
+                            delta: int = event.current - event.previous
+                            print(
+                                f"카드 비용 변화: {card.name},"
+                                f" {event.previous} -> {event.current}"
+                                f" ({'+' if delta > 0 else '-'}{abs(delta)})"
+                            )
+                            card.current_cost = event.current
                     case DrawEventType.ItemCreated:
                         pass # DrawEvent가 아닌 ItemDrawData가 들어오는 경우 처리.
                     case DrawEventType.ItemUsed:
-                        print(f"아이템을 사용했습니다: {self._search_item_by_id(event.target_id)}")
+                        print(f"아이템을 사용했습니다: {self._search_item_by_id(event.target_id).name}")
                     case DrawEventType.ItemDestroyed:
                         item = self._search_item_by_id(event.target_id)
                         if item is not None:

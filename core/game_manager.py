@@ -7,6 +7,7 @@ import json
 from datetime import datetime
 from typing import Any, Dict, Final, List, Optional, Tuple
 from dataclasses import dataclass
+from functools import partial
 
 import core.card_data_manager as cdm
 from core.card import Card
@@ -162,7 +163,6 @@ class GameManager:
 
     def get_game_draw_state(self) -> GameDrawState:
         """현재 게임 상태를 반환. 주로 초기화에 사용."""
-        self.__event_manager.on_calculate_card_cost(True)
         return GameDrawState(
             self.__game_state.player_money,
             self.__game_state.player_health,
@@ -206,6 +206,7 @@ class GameManager:
                     PlayerStat.Attack: self.__game_state.player_attack,
                     PlayerStat.Action: self.__game_state.player_action
                 }.get(x),
+            "CardType": CardType,
             "get_card_data": cdm.get_card_data,
             "get_item_data": cdm.get_item_data,
             "player_index": self.__deck.player_index, 
@@ -213,51 +214,85 @@ class GameManager:
             "len": len
         }
 
-    def get_writable_static_table(self) -> Dict[str, Any]:
+    def get_writable_static_table(self, repeat = 1) -> Dict[str, Any]:
         """효과 스크립팅에서 사용 가능한 정적 변수/함수 목록 반환(쓰기 전용)."""
+
+        def noop(*_, **__):
+            pass
+
+        if repeat <= 0:
+            return {
+            "modify_player_stat": noop,
+            "add_item": noop,
+            "end_turn": noop,
+            "win_game": noop
+            }
+
         return {
-            "modify_player_stat": self.modify_player_stat,
-            "add_item": self.add_item,
+            "modify_player_stat": partial(self.modify_player_stat, repeat=repeat),
+            "add_item": partial(self.add_item, repeat=repeat),
             "end_turn": self.end_turn,
             "win_game": self.win_game
         }
     
-    def modify_player_stat(self, value_type: PlayerStat, amount: int, trigger_event =False) -> None:
+    def modify_player_stat(self, value_type: PlayerStat, amount: int, trigger_event:bool =False, repeat:int =1) -> None:
         """해당 플레이어 능력치를 amount만큼 변화."""
         if self.__game_end: return
-        previous = 0
-        current = 0
-        match (value_type):
-            case PlayerStat.Money:
-                previous = self.__game_state.player_money
-                self.__game_state.player_money = max(previous+amount, 0)
-                current = self.__game_state.player_money
-            case PlayerStat.Health:
-                previous = self.__game_state.player_health
-                self.__game_state.player_health = max(previous+amount, 0)
-                current = self.__game_state.player_health
-            case PlayerStat.Attack:
-                previous = self.__game_state.player_attack
-                self.__game_state.player_attack= max(previous+amount, 0)
-                current = self.__game_state.player_attack
-            case PlayerStat.Action:
-                previous = self.__game_state.player_action
-                self.__game_state.player_action= max(previous+amount, 0)
-                current = self.__game_state.player_action
-        if trigger_event:
-            self.__event_manager.on_player_stat_changed(value_type, previous, current)
-        self.__event_manager.push_draw_event(DrawEvent(
-            DrawEventType.PlayerStatChanged,
-            value_type.value,
-            previous,
-            current
-        ))
+        for _ in range(repeat):
+            previous = 0
+            current = 0
+            match (value_type):
+                case PlayerStat.Money:
+                    previous = self.__game_state.player_money
+                    self.__game_state.player_money = max(previous+amount, 0)
+                    current = self.__game_state.player_money
+                case PlayerStat.Health:
+                    previous = self.__game_state.player_health
+                    self.__game_state.player_health = max(previous+amount, 0)
+                    current = self.__game_state.player_health
+                case PlayerStat.Attack:
+                    previous = self.__game_state.player_attack
+                    self.__game_state.player_attack= max(previous+amount, 0)
+                    current = self.__game_state.player_attack
+                case PlayerStat.Action:
+                    previous = self.__game_state.player_action
+                    self.__game_state.player_action= max(previous+amount, 0)
+                    current = self.__game_state.player_action
+            if trigger_event:
+                self.__event_manager.on_player_stat_changed(value_type, previous, current)
+            self.__event_manager.push_draw_event(DrawEvent(
+                DrawEventType.PlayerStatChanged,
+                value_type.value,
+                previous,
+                current
+            ))
 
-    def add_item(self, item_data: ItemData, amount: int = 1):
+    def after_action(self):
+        """각 행동이 끝난 후 호출.
+        비용 재계산, 패배 조건 검사, 카드 및 아이템 사용 가능 여부 계산 등의 작업 수행."""
+        self.__event_manager.on_calculate_card_cost(True)
+        self.__deck.apply_cost_modifier()
+        if self.__game_state.player_health <= 0:
+            self.lose_game()
+        lose = True
+        for card in self.__deck.get_cards():
+            if self.can_buy_card(card):
+                lose = False
+                break
+        if lose:
+            for item in self.__inventory.get_items():
+                if self.can_use_item(item):
+                    lose = False
+                    break
+        if lose:
+            self.lose_game()
+
+    def add_item(self, item_data: ItemData, amount: int = 1, repeat: int =1):
         """인벤토리에 아이템을 amount개만큼 추가."""
         if self.__game_end: return
-        for i in range(amount):
-            self.inventory.add_item(item_data)
+        for _ in range(repeat):
+            for i in range(amount):
+                self.inventory.add_item(item_data)
 
     def can_buy_card(self, card: Optional[Card]) -> bool:
         """해당 id의 카드를 구매할 수 있는지 검사."""
@@ -268,11 +303,11 @@ class GameManager:
         else:
             return self.__game_state.player_money >= card.modified_cost
 
-    def buy_card(self, id: int) -> None:
+    def buy_card(self, id: int) -> bool:
         """(가능하다면) 주어진 id의 카드를 구매함."""
-        if self.__game_end or self.__game_state.player_remaining_action <= 0: return
+        if self.__game_end or self.__game_state.player_remaining_action <= 0: return False
         card: Optional[Card] = self.__deck.get_card_by_id(id)
-        if card is None or not self.can_buy_card(card): return
+        if card is None or not self.can_buy_card(card): return False
         self.__game_state.player_remaining_action -= 1
 
         match (card.card_data.type):
@@ -313,6 +348,10 @@ class GameManager:
         if self.__game_state.player_remaining_action <= 0:
             self.end_turn()
 
+        self.after_action()
+
+        return True
+
     def can_use_item(self, id: int) -> bool:
         """해당 id의 아이템을 사용할 수 있는지 검사."""
         if self.__game_end: return False
@@ -323,11 +362,12 @@ class GameManager:
         return True
 
     
-    def use_item(self, id: int) -> None:
+    def use_item(self, id: int) -> bool:
         """(가능하다면) 주어진 id의 아이템을 사용함."""
-        if self.__game_end or self.__game_state.player_remaining_action <= 0: return
+        if self.__game_end or self.__game_state.player_remaining_action <= 0: return False
         item: Optional[Item] = self.__inventory.get_item_by_id(id)
-        if item is None or not self.can_use_item(id): return
+        if item is None or not self.can_use_item(id): return False
+        self.__game_state.player_remaining_action -= 1
         self.__event_manager.push_draw_event(DrawEvent(
             DrawEventType.ItemUsed,
             item.id,
@@ -338,6 +378,10 @@ class GameManager:
 
         if self.__game_state.player_remaining_action <= 0:
             self.end_turn()
+
+        self.after_action()
+
+        return True
 
     # def can_end_turn(self) -> bool:
     #     """현재 턴을 넘길 수 있는 상태인지 검사."""

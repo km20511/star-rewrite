@@ -201,7 +201,7 @@ class Deck:
 
         for i, c in enumerate(self.__cards):
             if c.id in target_ids:
-                instance: Card = Card(card(c), i + index_offset)
+                instance: Card = Card(card(c), i + index_offset).register_event(self.__event_manager)
                 for _ in range(amount(c)):
                     cards_copy.insert(i + index_offset, instance)
                     self.__event_manager.on_card_created(instance)
@@ -311,7 +311,9 @@ class Deck:
     def apply_cost_modifier(self) -> None:
         """등록된 함수를 이용해 카드의 비용을 일괄적으로 계산하고 함수 목록을 초기화."""
         # 비용 초기화
+        prev_costs: List[int] = []
         for card in self.__cards:
+            prev_costs.append(card.modified_cost)
             card.modified_cost = card.card_data.cost
 
         # 비용 설정
@@ -329,8 +331,16 @@ class Deck:
                     card.modified_cost += func(card)
 
         # 일회성 비용 변동 적용 및 음수 비용 처리
-        for card in self.__cards:
+        for ind, card in enumerate(self.__cards):
             card.modified_cost = max(card.modified_cost + card.instant_cost_modifier, 0)
+            if card.modified_cost != prev_costs[ind]:
+                self.__event_manager.on_card_cost_changed(card, prev_costs[ind], card.modified_cost)
+                self.__event_manager.push_draw_event(DrawEvent(
+                    DrawEventType.CardCostChanged,
+                    card.id,
+                    prev_costs[ind],
+                    card.modified_cost
+                ))
 
         # 함수 목록 초기화
         self.__cost_modifiers.clear()

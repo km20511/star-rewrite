@@ -3,7 +3,7 @@
 """
 import os
 import json
-from typing import Final, List, Dict, Optional
+from typing import Final, List, Dict, Optional, cast
 
 from core.enums import CardType, EffectTarget, EventType
 from core.obj_data_formats import CardData, EffectData, ItemData
@@ -33,7 +33,7 @@ def _full_data_path(path: str) -> str:
     return os.path.join(os.getcwd(), path)
 
 
-def _parse_effect_list(effects: List[dict]) -> List[EffectData]:
+def _parse_effect_list(effects: List[Dict[str,str|Dict[str,str]]]) -> List[EffectData]:
     """
     카드, 아이템 데이터의 효과 리스트를 해석해 EffectData 객체의 목록으로 변환.
     id가 주어진 경우 __db_effects에서 데이터를 불러옴.
@@ -41,26 +41,27 @@ def _parse_effect_list(effects: List[dict]) -> List[EffectData]:
     result: List[EffectData] = []
     for raw_data in effects:
         if "base_id" in raw_data:
-            base: EffectData = __db_effects[raw_data["base_id"]]
+            base: EffectData = __db_effects[cast(str,raw_data["base_id"])]
             result.append(EffectData(
-                raw_data["event_type"]         if "event_type" in raw_data else base.event_type,
-                raw_data["effect"]             if "effect"     in raw_data else base.effect,
-                raw_data["target"]             if "target"     in raw_data else base.target,
-                raw_data["query"]              if "query"      in raw_data else base.query,
-                raw_data["order_by"]["method"] if "order_by"   in raw_data else base.order_method,
-                raw_data["order_by"]["crop"]   if "order_by"   in raw_data else base.order_crop,
-                base.args | {k:v for k, v in raw_data["args"].items() if k in base.args}
+                EventType[cast(str,raw_data["event_type"])]         if "event_type" in raw_data else base.event_type,
+                cast(str,raw_data["effect"])             if "effect"     in raw_data else base.effect,
+                EffectTarget[cast(str,raw_data["target"])]          if "target"     in raw_data else base.target,
+                cast(str,raw_data["query"])              if "query"      in raw_data else base.query,
+                cast(Dict[str,str],raw_data["order_by"])["method"] if "order_by"   in raw_data else base.order_method,
+                cast(Dict[str,str],raw_data["order_by"])["crop"]   if "order_by"   in raw_data else base.order_crop,
+                base.args | {k:v for k, v in cast(Dict[str,str],raw_data["args"]).items() if k in base.args}
                 if "args" in raw_data else base.args
             ))
         else:
             result.append(EffectData(
-                raw_data["event_type"],
-                raw_data["effect"],
-                raw_data["target"],
-                raw_data["query"]              if "query"      in raw_data else "",
-                raw_data["order_by"]["method"] if "order_by"   in raw_data else "",
-                raw_data["order_by"]["crop"]   if "order_by"   in raw_data else "-1",
-                {}
+                EventType[cast(str,raw_data["event_type"])],
+                cast(str,raw_data["effect"]),
+                EffectTarget[cast(str,raw_data["target"])],
+                cast(str,raw_data["query"])              if "query"      in raw_data else "",
+                cast(Dict[str,str],raw_data["order_by"])["method"] if "order_by"   in raw_data else "",
+                cast(Dict[str,str],raw_data["order_by"])["crop"]   if "order_by"   in raw_data else "-1",
+                {k:v for k, v in cast(Dict[str,str],raw_data["args"]).items() if k in base.args}
+                if "args" in raw_data else {}
             ))
     return result
 

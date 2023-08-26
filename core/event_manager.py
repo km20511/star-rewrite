@@ -42,7 +42,7 @@ class EventManager:
         self.__on_card_moved_listeners: List[EventHandler3[Card, int, int]] = []
         self.__on_calculate_card_cost: List[EventHandler0] = []
 
-        self.__listeners_table: Dict[EventType, EventHandlerList[EventHandlerType_co]] = {
+        self.__listeners_table: Dict[EventType, EventHandlerList] = {
             EventType.OnShown: self.__on_card_shown_listeners,
             EventType.OnEntered: self.__on_card_entered_listeners,
             EventType.OnPurchased: self.__on_card_purchased_listeners,
@@ -150,8 +150,9 @@ class EventManager:
                         eval(order_crop, {"__builtins__": {}}, readonlys | kwargs)
                     )
                     
+                repeat = len(deck_query.get_target())
                 writables = (
-                    game_manager.get_writable_static_table() 
+                    game_manager.get_writable_static_table(repeat) 
                     | game_manager.deck.get_writable_static_table(deck_query)
                 )
             
@@ -176,9 +177,9 @@ class EventManager:
                         lambda item: eval_readonly_script(order_method, item),
                         eval(order_crop, {"__builtins__": {}}, readonlys | kwargs)
                     )
-
+                repeat = len(inven_query.get_target())
                 writables = (
-                    game_manager.get_writable_static_table()
+                    game_manager.get_writable_static_table(repeat)
                     | game_manager.inventory.get_writable_static_table(inven_query)
                 )
 
@@ -188,13 +189,13 @@ class EventManager:
                     game_manager.get_writable_static_table()
                 )
 
-            eval(effect, {"__builtins__": {}}, (
-                readonlys | writables | kwargs | {
+            effect_eval_env =readonlys | writables | kwargs | {
                     k: eval(v, {"__builtins__": {}}, readonlys | kwargs)
                     for k, v in args.items()
                     if v is not None
                 }
-            ))
+            
+            eval(effect, {"__builtins__": {}}|effect_eval_env, {})
 
             self.invoke_events(recursive=True)
 
@@ -270,7 +271,7 @@ class EventManager:
                 listener.invoke(self.__game_manager, target)
         else:
             for listener in self.__on_card_shown_listeners:
-                self.__event_queue.append(lambda: listener.invoke(self.__game_manager, target))
+                self.__event_queue.append(lambda event_handler=listener: event_handler.invoke(self.__game_manager, target))
 
     def on_card_entered(
         self, target: Card, immediate: bool = False
@@ -281,7 +282,7 @@ class EventManager:
                 listener.invoke(self.__game_manager, target)
         else:
             for listener in self.__on_card_entered_listeners:
-                self.__event_queue.append(lambda: listener.invoke(self.__game_manager, target))
+                self.__event_queue.append(lambda event_handler=listener: event_handler.invoke(self.__game_manager, target))
 
     def on_card_purchased(
         self, target: Card, immediate: bool = False
@@ -293,7 +294,7 @@ class EventManager:
         else:
             for listener in self.__on_card_purchased_listeners:
                 # print(f"Debug: {listener.owner.owner}, {listener.owner.data.query}, {listener.owner.data.effect}")
-                self.__event_queue.append(lambda: listener.invoke(self.__game_manager, target))
+                self.__event_queue.append(lambda event_handler=listener: event_handler.invoke(self.__game_manager, target))
 
     def on_item_used(
         self, target: Item, immediate: bool = False
@@ -304,7 +305,7 @@ class EventManager:
                 listener.invoke(self.__game_manager, target)
         else:
             for listener in self.__on_item_used_listeners:
-                self.__event_queue.append(lambda: listener.invoke(self.__game_manager, target))
+                self.__event_queue.append(lambda event_handler=listener: event_handler.invoke(self.__game_manager, target))
 
     def on_card_created(
         self, target: Card, immediate: bool = False
@@ -315,7 +316,7 @@ class EventManager:
                 listener.invoke(self.__game_manager, target)
         else:
             for listener in self.__on_card_created_listeners:
-                self.__event_queue.append(lambda: listener.invoke(self.__game_manager, target))
+                self.__event_queue.append(lambda event_handler=listener: event_handler.invoke(self.__game_manager, target))
 
     def on_card_destroyed(
         self, target: Card, immediate: bool = False
@@ -326,7 +327,7 @@ class EventManager:
                 listener.invoke(self.__game_manager, target)
         else:
             for listener in self.__on_card_destroyed_listeners:
-                self.__event_queue.append(lambda: listener.invoke(self.__game_manager, target))
+                self.__event_queue.append(lambda event_handler=listener: event_handler.invoke(self.__game_manager, target))
 
     def on_item_created(
         self, target: Item, immediate: bool = False
@@ -337,7 +338,7 @@ class EventManager:
                 listener.invoke(self.__game_manager, target)
         else:
             for listener in self.__on_item_created_listeners:
-                self.__event_queue.append(lambda: listener.invoke(self.__game_manager, target))
+                self.__event_queue.append(lambda event_handler=listener: event_handler.invoke(self.__game_manager, target))
 
     def on_item_destroyed(
         self, target: Item, immediate: bool = False
@@ -348,7 +349,7 @@ class EventManager:
                 listener.invoke(self.__game_manager, target)
         else:
             for listener in self.__on_item_destroyed_listeners:
-                self.__event_queue.append(lambda: listener.invoke(self.__game_manager, target))
+                self.__event_queue.append(lambda event_handler=listener: event_handler.invoke(self.__game_manager, target))
 
     def on_player_stat_changed(
         self,
@@ -364,7 +365,7 @@ class EventManager:
         else:
             for listener in self.__on_player_stat_changed_listeners:
                 self.__event_queue.append(
-                    lambda: listener.invoke(self.__game_manager, stat_type, previous, current)
+                    lambda event_handler=listener: event_handler.invoke(self.__game_manager, stat_type, previous, current)
                 )
 
     def on_turn_begin(
@@ -377,7 +378,7 @@ class EventManager:
         else:
             for listener in self.__on_turn_begin_listeners:
                 self.__event_queue.append(
-                    lambda: listener.invoke(self.__game_manager, current_turn)
+                    lambda event_handler=listener: event_handler.invoke(self.__game_manager, current_turn)
                 )
 
     def on_turn_end(
@@ -390,7 +391,7 @@ class EventManager:
         else:
             for listener in self.__on_turn_end_listeners:
                 self.__event_queue.append(
-                    lambda: listener.invoke(self.__game_manager, current_turn)
+                    lambda event_handler=listener: event_handler.invoke(self.__game_manager, current_turn)
                 )
 
     def on_card_cost_changed(
@@ -407,7 +408,7 @@ class EventManager:
         else:
             for listener in self.__on_card_cost_changed_listeners:
                 self.__event_queue.append(
-                    lambda: listener.invoke(self.__game_manager, target, previous, current)
+                    lambda event_handler=listener: event_handler.invoke(self.__game_manager, target, previous, current)
                 )
 
     def on_card_moved(
@@ -424,18 +425,20 @@ class EventManager:
         else:
             for listener in self.__on_card_moved_listeners:
                 self.__event_queue.append(
-                    lambda: listener.invoke(self.__game_manager, target, previous, current)
+                    lambda event_handler=listener: event_handler.invoke(self.__game_manager, target, previous, current)
                 )
 
     def on_calculate_card_cost(
         self, immediate: bool = False
     ):
         if immediate:
+            self.__game_manager.deck.set_cost_mode(True)
             for listener in self.__on_calculate_card_cost:
                 listener.invoke(self.__game_manager)
+            self.__game_manager.deck.set_cost_mode(False)
         else:
             for listener in self.__on_calculate_card_cost:
-                self.__event_queue.append(lambda: listener.invoke(self.__game_manager))
+                self.__event_queue.append(lambda event_handler=listener: event_handler.invoke(self.__game_manager))
 
     def invoke_events(self, recursive: bool = False):
         """이벤트 큐의 모든 이벤트 실행."""

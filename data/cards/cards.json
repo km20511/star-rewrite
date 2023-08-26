@@ -82,9 +82,9 @@
                     "args": {"amount": "3"}
                 },
                 {
-                    "effect": "set_cost(amount=lambda this: abs(this.current_index - player_index) * 2)",
+                    "effect": "set_cost(amount=lambda card: abs(card.current_index - player_index) * 2)",
                     "target": "Executer",
-                    "event_type": "OnCardCostChanged"
+                    "event_type": "OnCalculateCardCost"
                 },
                 {
                     "base_id": "DESTROY_ON_PURCHASED"
@@ -136,13 +136,13 @@
                 {
                     "effect": "modify_player_stat(PLAYER_ATTACK, amount = 3)",
                     "target": "Deck",
-                    "query": "this.card_data.type == CardType.Enemy and this.is_front_face",
+                    "query": "executer == target and this.card_data.type == CardType.Enemy and this.is_front_face",
                     "event_type": "OnPurchased"
                 },
                 {
                     "effect": "modify_player_stat(PLAYER_HEALTH, amount = 6)",
                     "target": "Executer",
-                    "query": "PLAYER_HEALTH <= 3",
+                    "query": "executer == target and get_player_stat(PLAYER_HEALTH) <= 3",
                     "event_type": "OnPurchased"
                 },
                 {
@@ -161,6 +161,9 @@
                 {
                     "base_id": "REWARD_ITEM",
                     "args": {"item_id": "8", "amount": "1"}
+                },
+                {
+                    "base_id": "DESTROY_ON_PURCHASED"
                 }
             ]
         },

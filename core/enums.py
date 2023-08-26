@@ -79,8 +79,7 @@ class DrawEventType(Enum):
     CardCreated = auto()
     """카드가 새로 생성됨.
     target: 생성된 카드 id.
-    current: 생성된 인덱스.
-    TODO: 데이터 넘길 방법 고민하기"""
+    current: 생성된 인덱스."""
     CardShown = auto()
     """카드가 공개되거나 숨겨짐.
     target: 해당 카드 id.
@@ -101,12 +100,10 @@ class DrawEventType(Enum):
     """카드 비용이 변화함.
     target: 해당 카드 id.
     previous: 이전 비용.
-    current: 현재 비용.
-    TODO: 이거 호출하기"""
+    current: 현재 비용."""
     ItemCreated = auto()
     """아이템이 새로 생성됨.
-    target: 생성된 아이템 id.
-    TODO: 마찬가지로 데이터 전달 방식 고민."""
+    target: 생성된 아이템 id."""
     ItemUsed = auto()
     """아이템이 사용됨.
     target: 해당 아이템 id."""
