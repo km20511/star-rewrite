@@ -46,6 +46,18 @@ class Color:
     def black() -> "Color":
         return Color(0.0, 0.0, 0.0, 1.0)
 
+    @staticmethod
+    def red() -> "Color":
+        return Color(1.0, 0.0, 0.0, 1.0)
+
+    @staticmethod
+    def green() -> "Color":
+        return Color(0.0, 1.0, 0.0, 1.0)
+
+    @staticmethod
+    def blue() -> "Color":
+        return Color(0.0, 0.0, 1.0, 1.0)
+
     def __repr__(self) -> str:
         return f"Color({self.r}, {self.g}, {self.b}, {self.a})"
 

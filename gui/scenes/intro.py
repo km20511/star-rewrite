@@ -22,7 +22,7 @@ class IntroScene(Scene):
     match_w_h = 0.7
     ref_w: int = 1280
     ref_h: int = 720
-    on_load_file: Callable[[str], None] = lambda x: None
+    on_load_file: Callable[[str], None] = lambda _, x: None
 
     class UIState(Enum):
         Title = auto()
@@ -35,6 +35,7 @@ class IntroScene(Scene):
         self.ui_state = IntroScene.UIState.Title
         self.title_batch = pyglet.graphics.Batch()
         self.selection_batch = pyglet.graphics.Batch()
+        self.on_load_file = on_load_file
 
         self.title_text = pyglet.text.Label(
             "Star Rewrite",
@@ -68,7 +69,7 @@ class IntroScene(Scene):
         )
         self.group_btn = pyglet.graphics.Group(order=3)
         self.btn_style = {
-            "width": 300,
+            "width": 400,
             "height": 80,
             "border": 5,
             "font_family": CONTENT_FONT,
@@ -86,7 +87,7 @@ class IntroScene(Scene):
         self.title_btns: List[SolidButton] = [
             SolidButton(
                 scene=self,
-                x=self.window.width // 2 - 150,
+                x=self.window.width // 2 - 200,
                 y=self.window.height // 2 + button_y_1 + button_y_step*ind,
                 text=text,
                 **self.btn_style
@@ -120,7 +121,7 @@ class IntroScene(Scene):
         """is_savefile이 참이면 저장 파일을, 거짓이면 레벨을 선택하는 화면 구성."""
         self.level_select_text.text = "Continue" if is_savefile else "New Game"
         btn_texts_and_paths: List[Tuple[str, str]] = []
-        self.ui_state = IntroScene.UIState.Selecting
+        self._switch_state(IntroScene.UIState.Selecting)
     
         if is_savefile:
             for filename in os.listdir(SAVES_PATH):
@@ -149,13 +150,34 @@ class IntroScene(Scene):
         for ind, (text, filename) in enumerate(btn_texts_and_paths):
             btn = SolidButton(
                 scene=self,
-                x=self.window.width // 2 - 150,
+                x=self.window.width // 2 - 200,
                 y=self.window.height // 2 + button_y_1 + button_y_step*ind,
                 text=text,
                 **(self.btn_style | {"batch": self.selection_batch})
             )
-            btn.push_handlers(on_press=lambda file=filename: self.on_load_file(file))
+            btn.push_handlers(on_press=(lambda file=filename: self.on_load_file(file)))
+            self.selection_btns.append(btn)
+        cancel_btn = SolidButton(
+            scene=self,
+            x=self.window.width // 2 - 200,
+            y=self.window.height // 2 + button_y_1 + button_y_step*len(btn_texts_and_paths),
+            text="돌아가기",
+            **(self.btn_style | {"batch": self.selection_batch})
+        )
+        cancel_btn.push_handlers(on_press=lambda : self._switch_state(IntroScene.UIState.Title))
+        self.selection_btns.append(cancel_btn)
 
+    def _switch_state(self, state: UIState):
+        self.ui_state = state
+        if state == IntroScene.UIState.Title:
+            self.title_btns[0].push_handlers(on_press=lambda : self.select_menu(True))
+            self.title_btns[1].push_handlers(on_press=lambda : self.select_menu(False))
+            for i in self.selection_btns:
+                i.pop_handlers()
+        else:
+            for i in self.title_btns:
+                i.pop_handlers()
+            
     def on_resize_window(self, w: int, h: int) -> None:
         super().on_resize_window(w, h)
 
@@ -164,4 +186,7 @@ class IntroScene(Scene):
         self.title_text.y = self.window.height//2 + 100*self.scale_factor
     
     def unload(self):
-        return NotImplementedError
+        self.window.on_draw = lambda : None
+        del self.title_text
+        del self.title_btns
+        del self.selection_btns
