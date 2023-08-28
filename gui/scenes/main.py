@@ -24,14 +24,16 @@ class MainScene(Scene):
 
         self.card_batch = pyglet.graphics.Batch()
         self.card_group = pyglet.graphics.Group(order=3)
+        self.card_thumnail_group = pyglet.graphics.Group(order=2)
+        self.card_text_group = pyglet.graphics.Group(order=4)
 
         self.setup_scene()
         
         @self.window.event
         def on_draw():
             self.window.clear()
-            self.ui_batch.draw()
             self.card_batch.draw()
+            self.ui_batch.draw()
 
     def setup_scene(self):
         """GameDrawState를 이용해 게임 상태 초기화."""
@@ -48,8 +50,11 @@ class MainScene(Scene):
         )
         
         self.card_layout = CardsLayout(
-            self, len(self.game_state.deck)
+            self, len(self.game_state.deck),
+            center_scale=1.4,
+            scale_width=0.4,
+            scroll_sensitivity=5.0
         )
 
-        self.cards = [Card(data, self.card_layout, self.card_batch, self.card_group, index=index)
+        self.cards = [Card(data, self.card_layout, self.card_batch, self.card_group, self.card_thumnail_group, self.card_text_group, index=index)
                     for index, data in enumerate(self.game_state.deck)]
