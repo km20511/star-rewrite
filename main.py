@@ -11,7 +11,7 @@ FONTS_PATH: str = "data/fonts"
 def main() -> None:
 
     pyglet.font.add_directory(FONTS_PATH)
-    pyglet.resource.path = ["data/fonts", "data/images/game_sprites"]
+    pyglet.resource.path = ["data/fonts", "data/images/game_sprites", "data/images/cards"]
     pyglet.resource.reindex()
 
     app_window = pyglet.window.Window(caption="Star Rewrite", resizable=True)

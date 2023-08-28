@@ -1,9 +1,10 @@
 from pyglet.math import Vec2
+from pyglet.event import EventDispatcher
 
 from gui.scenes import Scene
 from gui.utils import clamp, lerp
 
-class ElementsLayoutBase:
+class ElementsLayoutBase(EventDispatcher):
     """카드, 아이템 등의 위치를 관리하는 객체의 기본 클래스."""
     def __init__(self, scene: Scene, length: int) -> None:
         self.scene: Scene = scene
@@ -20,6 +21,8 @@ class ElementsLayoutBase:
     def get_scale(self, index: int) -> float:
         """index번째 요소의 크기 계수를 반환."""
         return 1.0
+    
+ElementsLayoutBase.register_event_type("on_layout_modified")
     
 
 class CardsLayout(ElementsLayoutBase):
@@ -58,16 +61,26 @@ class CardsLayout(ElementsLayoutBase):
         self.scroll_sensitivity: float = scroll_sensitivity
 
         @self.scene.window.event
-        def on_scroll(x: int, y: int, scroll_x: float, scroll_y: float):
-            if abs(y - (self.scene.window.height + self.y*self.scene.scale_factor)) > self.height // 2:
+        def on_mouse_scroll(x: int, y: int, scroll_x: float, scroll_y: float):
+            if abs(y - (self.scene.window.height//2 + self.y*self.scene.scale_factor)) > self.height*self.scene.scale_factor // 2:
                 return
             self.scroll_value = clamp(
                 self.scroll_value + (scroll_x + scroll_y) * self.scroll_sensitivity,
                 0, self.get_width()
             )
+            self.dispatch_event("on_layout_modified")
+
+        @self.scene.window.event
+        def on_resize(w: int, h: int):
+            self.dispatch_event("on_layout_modified")
+
+    # def _nearest_index(start: float, space: float, length: int, target: float) -> int:
+    #     """target과 가장 가까운 등차수열 항의 번호를 계산."""
+    #     index: int = round((target - start) / space)
+    #     return 0 if index < 0 else (length - 1 if index >= length else index)
 
     def get_position(self, index: int) -> Vec2:
-        return Vec2(self.space*index - self.scroll_value, self.y) * self.scene.scale_factor + Vec2(0, self.scene.window.height // 2)
+        return Vec2(self.space*index - self.scroll_value, self.y) * self.scene.scale_factor + Vec2(self.scene.window.width // 2, self.scene.window.height // 2)
     
     def get_rotation(self, index: int) -> float:
         return 0.0
@@ -77,7 +90,7 @@ class CardsLayout(ElementsLayoutBase):
         normal_x: float = pos_x / self.scene.window.width
         if abs(normal_x - 0.5)*2 > self.scale_width:
             return self.scene.scale_factor
-        return lerp(self.center_scale, 1.0, abs(normal_x - 0.5)) * self.scene.scale_factor
+        return lerp(self.center_scale, 1.0, abs(normal_x - 0.5)*2/self.scale_width) * self.scene.scale_factor
 
     def get_width(self) -> int:
         """가장 왼쪽 카드의 기준점부터 가장 오른쪽 카드 기준점까지의 거리 계산.

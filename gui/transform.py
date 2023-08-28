@@ -1,6 +1,6 @@
 from pyglet.math import Vec2, Mat3
 
-from gui.utils import lerp
+from gui.utils import lerp, trs_matrix
 
 class Transform2D:
     """변위, 회전, 크기를 이용해 좌표계 변환을 수행할 수 있는 객체."""
@@ -8,7 +8,6 @@ class Transform2D:
         self.__pos = pos
         self.__rot = rot
         self.__scale = scale
-        self.__mat = Mat3()
         self._calc_matrix()
 
     @property
@@ -39,7 +38,7 @@ class Transform2D:
         self._calc_matrix()
 
     def _calc_matrix(self) -> None:
-        self.__mat = Mat3().scale(self.__scale.x, self.__scale.y).rotate(self.__rot).translate(self.__pos.x, self.__pos.y)
+        self.__mat = trs_matrix(self.__pos, self.__rot, self.__scale)
 
     @property
     def matrix(self) -> Mat3:

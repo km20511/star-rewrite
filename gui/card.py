@@ -27,14 +27,18 @@ class Card:
             data: CardDrawData, 
             layout: CardsLayout,
             batch: Batch,
-            group: Group,
+            group_body: Group,
+            group_thumbnail: Group,
+            group_text: Group,
             height: float = 240.0,
             index: int = 0
             ) -> None:
         self.data: CardDrawData = data
         self.layout: CardsLayout = layout
         self.batch: Batch = batch
-        self.group: Group = group
+        self.group_body: Group = group_body
+        self.group_thumbnail: Group = group_thumbnail
+        self.group_text: Group = group_text
         self.base_width: float = height / 1.5
         self.base_height: float = height
         self.index: int = index
@@ -44,43 +48,48 @@ class Card:
             Vec2(1, 1) * layout.get_scale(index)
         )
 
-        self.sprite_front = Sprite(pyglet.resource.image(CARD_SPRITE[data.type][0]), z=2, batch=batch, group=group)
+        image_front = pyglet.resource.image(CARD_SPRITE[data.type][0])
         try:
-            self.sprite_content = Sprite(pyglet.resource.image(data.sprite_name), z=1, batch=batch, group=group)
+            image_content = pyglet.resource.image(data.sprite_name)
         except pyglet.resource.ResourceNotFoundException:
-            self.sprite_content = Sprite(pyglet.resource.image("card_unknown.png"))
-        self.sprite_back = Sprite(pyglet.resource.image(CARD_SPRITE[data.type][1]), z=2, batch=batch, group=group)
+            image_content = pyglet.resource.image("card_unknown.png")
+        image_back = pyglet.resource.image(CARD_SPRITE[data.type][1])
 
-        self.sprite_front.image.anchor_x = self.sprite_front.image.width / 2
-        self.sprite_front.image.anchor_y = self.sprite_front.image.height / 2
-        self.sprite_content.image.anchor_x = self.sprite_content.image.width / 2
-        self.sprite_content.image.anchor_y = self.sprite_content.image.height / 2
-        self.sprite_back.image.anchor_x = self.sprite_back.image.width / 2
-        self.sprite_back.image.anchor_y = self.sprite_back.image.height / 2
+        image_front.anchor_x = image_front.width / 2
+        image_front.anchor_y = image_front.height / 2
+        image_content.anchor_x = image_content.width / 2
+        image_content.anchor_y = image_content.height / 2
+        image_back.anchor_x = image_back.width / 2
+        image_back.anchor_y = image_back.height / 2
+
+        self.sprite_front = Sprite(image_front, z=2, batch=batch, group=group_body)
+        self.sprite_content = Sprite(image_content, z=1, batch=batch, group=group_thumbnail)
+        self.sprite_back = Sprite(image_back, z=2, batch=batch, group=group_body)
+
         
         self.label_cost = pyglet.text.Label(
             str(data.current_cost), 
             font_name=COST_FONT, font_size=15,
             anchor_x="center", anchor_y="center", align="center", z=3, 
-            batch=batch, group=group
+            batch=batch, group=group_text
         )
         self.label_title = pyglet.text.Label(
             data.name, 
-            font_name=TITLE_FONT, font_size=15,
-            color=Color.white().tuple_256(),
+            font_name=TITLE_FONT, font_size=10,
+            color=Color.black().tuple_256(),
             anchor_x="center", anchor_y="center", align="center", z=3, 
-            batch=batch, group=group
+            batch=batch, group=group_text
         )
         self.label_description = pyglet.text.Label(
-            data.name, 
-            font_name=TITLE_FONT, font_size=15,
+            data.description, 
+            font_name=TITLE_FONT, font_size=8,
             color=Color.black().tuple_256(),
             anchor_x="center", anchor_y="center", align="center", z=3, 
             width=self.base_width / 1.5 * layout.scene.scale_factor, multiline=True,
-            batch=batch, group=group
+            batch=batch, group=group_text
         )
 
-        self.layout.scene.push_handlers(on_scene_updated=lambda dt: self.update_state())
+        self.layout.push_handlers(on_layout_modified=lambda : self.update_state())
         self.update_state()
 
     def update_state(self):
@@ -98,16 +107,17 @@ class Card:
             self.label_title.visible = self.label_description.visible = True
             self.label_cost.visible = self.data.type != CardType.Event
 
-            self.sprite_content.position = (*(trs @ (Vec3(0, self.base_height * 42.5 / 180)))[:2], 1)
+            # translation이 제대로 이루어지려면 z=1인 3차원 벡터 필요.
+            self.sprite_content.position = (*(trs @ (Vec3(0, self.base_height * 42.5 / 180, 1)))[:2], 1)
             self.sprite_content.rotation = self.transform.rotation
-            self.sprite_content.width, self.sprite_content.height = self.base_width*self.transform.scale.x, self.base_height*self.transform.scale.y
+            self.sprite_content.width, self.sprite_content.height = self.base_width*100/120*self.transform.scale.x, self.base_height*75/180*self.transform.scale.y
 
             self.sprite_front.position = (*self.transform.position, 2)
             self.sprite_front.rotation = self.transform.rotation
             self.sprite_front.width, self.sprite_front.height = self.base_width*self.transform.scale.x, self.base_height*self.transform.scale.y
             
             if self.data.type != CardType.Event:
-                self.label_cost.position = (*(trs @ (Vec3(-self.base_width * 45 / 120, self.base_height * 75 / 180)))[:2], 3)
+                self.label_cost.position = (*(trs @ (Vec3(-self.base_width * 45 / 120, self.base_height * 75 / 180, 1)))[:2], 3)
                 self.label_cost.rotation = self.transform.rotation
                 self.label_cost.font_size = 15 * self.transform.scale.x
                 self.label_cost.color = (
@@ -117,14 +127,14 @@ class Card:
                     )
                 ).tuple_256()
             
-            self.label_title.position = (*(trs @ (Vec3(0, self.base_height * 0)))[:2], 3)
+            self.label_title.position = (*(trs @ (Vec3(0, self.base_height * 0, 1)))[:2], 3)
             self.label_title.rotation = self.transform.rotation
-            self.label_title.font_size = self.transform.scale.x
+            self.label_title.font_size = 10 * self.transform.scale.x
 
-            self.label_description.position = (*(trs @ (Vec3(0, -self.base_height * 0.25)))[:2], 3)
+            self.label_description.position = (*(trs @ (Vec3(0, -self.base_height * 0.25, 1)))[:2], 3)
             self.label_description.rotation = self.transform.rotation
             self.label_description.width = self.transform.scale.x * self.base_width / 1.5
-            self.label_description.font_size = self.transform.scale.x
+            self.label_description.font_size = 8 * self.transform.scale.x
         else:
             self.sprite_front.visible = self.sprite_content.visible = False
             self.label_cost.visible = self.label_title.visible = self.label_description.visible = False
