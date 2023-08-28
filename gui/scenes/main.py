@@ -4,6 +4,7 @@ import pyglet
 
 from core import GameManager
 from gui.card import Card
+from gui.color import Color
 from gui.elements_layout import CardsLayout
 from gui.scenes import Scene
 
@@ -19,6 +20,10 @@ class MainScene(Scene):
         self.game: GameManager = GameManager.create_from_file(filepath)
         self.game_state = self.game.get_game_draw_state()
 
+        self.bg_shape = pyglet.shapes.Rectangle(
+            0,0,self.window.width, self.window.height,
+            (Color.white() * 0.4).tuple_256())
+
         self.ui_batch = pyglet.graphics.Batch()
         self.ui_group = pyglet.graphics.Group(order=5)
 
@@ -30,6 +35,7 @@ class MainScene(Scene):
         @self.window.event
         def on_draw():
             self.window.clear()
+            self.bg_shape.draw()
             self.ui_batch.draw()
             self.card_batch.draw()
 

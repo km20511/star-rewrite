@@ -67,7 +67,7 @@ class Card:
         self.label_title = pyglet.text.Label(
             data.name, 
             font_name=TITLE_FONT, font_size=15,
-            color=Color.black().tuple_256(),
+            color=Color.white().tuple_256(),
             anchor_x="center", anchor_y="center", align="center", z=3, 
             batch=batch, group=group
         )

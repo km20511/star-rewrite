@@ -9,6 +9,7 @@ class Transform2D:
         self.__rot = rot
         self.__scale = scale
         self.__mat = Mat3()
+        self._calc_matrix()
 
     @property
     def position(self) -> Vec2:
