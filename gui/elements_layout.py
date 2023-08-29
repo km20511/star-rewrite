@@ -1,7 +1,11 @@
+import time
+
+import pyglet
 from pyglet.math import Vec2
 from pyglet.event import EventDispatcher
 
 from gui.scenes import Scene
+from gui.transitions import Transition
 from gui.utils import clamp, lerp
 
 class ElementsLayoutBase(EventDispatcher):
@@ -38,6 +42,7 @@ class CardsLayout(ElementsLayoutBase):
             center_scale: float = 1.3,
             scale_width: float = 0.6,
             initial_scroll: float = 0.0,
+            selected: int = 0,
             scroll_sensitivity: float = 1.0
             ) -> None:
         """CardsLayout의 초기화 함수.
@@ -50,6 +55,7 @@ class CardsLayout(ElementsLayoutBase):
             `center_scale`: float - 중앙 카드의 크기 보정치.
             `scale_width`: float - 크기를 보정할 카드가 위치하는 창의 범위.
             `initial_scroll`: float - 초기 스크롤 값. 0인 경우 가장 왼쪽 카드가 화면 중앙에 위치.
+            `selected`: int - 현재 선택된 카드 인덱스.
             `scroll_sensitivity`: float - 스크롤 속력."""
         super().__init__(scene, length)
         self.space: int = space
@@ -58,17 +64,50 @@ class CardsLayout(ElementsLayoutBase):
         self.center_scale: float = center_scale
         self.scale_width: float = scale_width
         self.scroll_value: float = initial_scroll
+        self.input_scroll: float = 0.0
         self.scroll_sensitivity: float = scroll_sensitivity
+        self.selected: int = selected
+        self.scroll_transition: Transition = Transition(self.scroll_value, float(selected * space), 1.0)
+        self.scroll_transition.start(time.time())
+
+        @self.scene.event
+        def on_scene_updated(dt: float):
+            if self.scroll_transition.active:
+                self.scroll_value = self.scroll_transition.update(time.time())
+                self.dispatch_event("on_layout_modified")
 
         @self.scene.window.event
         def on_mouse_scroll(x: int, y: int, scroll_x: float, scroll_y: float):
             if abs(y - (self.scene.window.height//2 + self.y*self.scene.scale_factor)) > self.height*self.scene.scale_factor // 2:
                 return
-            self.scroll_value = clamp(
-                self.scroll_value + (scroll_x + scroll_y) * self.scroll_sensitivity,
-                0, self.get_width()
-            )
-            self.dispatch_event("on_layout_modified")
+            scroll_delta: float = (scroll_x + scroll_y) * self.scroll_sensitivity
+            if scroll_delta * self.input_scroll < 0:
+                self.input_scroll = scroll_delta
+            else:
+                self.input_scroll += scroll_delta
+            prev_selected: int = self.selected
+            if self.input_scroll > self.space and self.selected < self.length - 1:
+                self.selected += 1
+            elif self.input_scroll < -self.space and self.selected > 0:
+                self.selected -= 1
+            if self.selected != prev_selected:
+                self.input_scroll = 0.0
+                self.scroll_transition.start_value = self.scroll_value
+                self.scroll_transition.destination_value = float(self.space * self.selected)
+                self.scroll_transition.start(time.time())
+
+        @self.scene.window.event
+        def on_key_press(symbol, modifier):
+            prev_selected: int = self.selected
+            if symbol == pyglet.window.key.RIGHT and self.selected < self.length - 1:
+                self.selected += 1
+            elif symbol == pyglet.window.key.LEFT and self.selected > 0:
+                self.selected -= 1
+            if self.selected != prev_selected:
+                self.input_scroll = 0.0
+                self.scroll_transition.start_value = self.scroll_value
+                self.scroll_transition.destination_value = float(self.space * self.selected)
+                self.scroll_transition.start(time.time())
 
         @self.scene.window.event
         def on_resize(w: int, h: int):

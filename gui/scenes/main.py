@@ -31,6 +31,7 @@ class MainScene(Scene):
         self.card_group = pyglet.graphics.Group(order=3)
         self.card_thumnail_group = pyglet.graphics.Group(order=2)
         self.card_text_group = pyglet.graphics.Group(order=4)
+        self.frame_display = pyglet.window.FPSDisplay(window=self.window)
 
         self.setup_scene()
         
@@ -39,6 +40,7 @@ class MainScene(Scene):
             self.window.clear()
             self.card_batch.draw()
             self.ui_batch.draw()
+            self.frame_display.draw()
 
     def setup_scene(self):
         """GameDrawState를 이용해 게임 상태 초기화."""
