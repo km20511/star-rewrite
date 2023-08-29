@@ -47,7 +47,7 @@ class Transition(Generic[_T_Transitionable]):
         # if isinstance(a, _SupportsLerp):
         #     return a.lerp(a, b, t)
         # return (b-a)*t + a
-        if isinstance(a, float) and isinstance(b, float):
+        if isinstance(a, (int, float)) and isinstance(b, (int, float)):
             return (b-a)*t + a
         return a.lerp(a, b, t)
 
