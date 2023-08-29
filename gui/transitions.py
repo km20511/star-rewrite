@@ -54,7 +54,7 @@ class Transition(Generic[_T_Transitionable]):
     def start(self, current_time: float, duration: float = -1, reset: bool = True):
         """주어진 시간을 토대로 전이를 실행.
         reset이 참이라면 현재 값을 시작 값으로 덮어씀."""
-        if self.active: return
+        # if self.active: return
         if reset:
             self.current_value = self.start_value
         if duration >= 0:

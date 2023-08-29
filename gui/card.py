@@ -121,7 +121,7 @@ class Card:
                 self.label_cost.rotation = self.transform.rotation
                 self.label_cost.font_size = 15 * self.transform.scale.x
                 self.label_cost.color = (
-                    Color.white() if self.data.base_cost == self.data.current_cost else (
+                    Color.black() if self.data.base_cost == self.data.current_cost else (
                         Color.green() if (self.data.type == CardType.Enemy ^ self.data.current_cost > self.data.base_cost)
                         else Color.red()
                     )
@@ -133,7 +133,7 @@ class Card:
 
             self.label_description.position = (*(trs @ (Vec3(0, -self.base_height * 0.25, 1)))[:2], 3)
             self.label_description.rotation = self.transform.rotation
-            self.label_description.width = self.transform.scale.x * self.base_width / 1.5
+            self.label_description.width = self.transform.scale.x * self.base_width / 1.2
             self.label_description.font_size = 8 * self.transform.scale.x
         else:
             self.sprite_front.visible = self.sprite_content.visible = False

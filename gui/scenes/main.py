@@ -1,11 +1,13 @@
 from typing import Final
 
 import pyglet
+from pyglet.math import Vec2
 
 from core import GameManager
 from gui.card import Card
 from gui.color import Color
 from gui.elements_layout import CardsLayout
+from gui.player_hud import PlayerHUD
 from gui.scenes import Scene
 
 CONTENTS_FONT: Final[str] = "Neo둥근모 Pro"
@@ -44,23 +46,20 @@ class MainScene(Scene):
 
     def setup_scene(self):
         """GameDrawState를 이용해 게임 상태 초기화."""
-        self.hud_document = pyglet.text.Label(
-            f"{self.game_state.current_turn} 턴\n돈: {self.game_state.player_money}\n"
-            f"체력: {self.game_state.player_health}\n공격력: {self.game_state.player_attack}\n"
-            f"남은 행동: {self.game_state.player_remaining_action} / {self.game_state.player_action}",
-            CONTENTS_FONT, 20,
-            x=20, y=self.window.height -20, width=300,
-            anchor_x="left", anchor_y="top", align="left",
-            multiline=True,
-            batch=self.ui_batch,
-            group=self.ui_group
-        )
+
+        self.hud = PlayerHUD(
+            self,
+            self.game_state.player_money, self.game_state.player_health,
+            self.game_state.player_attack, self.game_state.player_action,
+            self.game_state.player_remaining_action, self.game_state.current_turn,
+            160, 80, 20, Vec2(20, 20),
+            batch=self.ui_batch, ui_group=self.ui_group)
         
         self.card_layout = CardsLayout(
             self, len(self.game_state.deck),
             center_scale=1.4,
             scale_width=0.4,
-            scroll_sensitivity=5.0
+            scroll_sensitivity=7.0
         )
 
         self.cards = [Card(data, self.card_layout, self.card_batch, self.card_group, self.card_thumnail_group, self.card_text_group, index=index)

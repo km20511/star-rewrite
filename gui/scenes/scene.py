@@ -25,9 +25,7 @@ class Scene(pyglet.event.EventDispatcher):
     def load(self):
         """저장된 Window 객체에서 Scene을 구성함."""
         self.active = True
-        @self.window.event
-        def on_resize(w: int, h: int) -> None:
-            self.on_resize_window(w, h)
+        self.window.push_handlers(on_resize=self.on_resize_window)
         pyglet.clock.schedule_interval(self.on_update_scene, 1/30)
 
     def unload(self):
@@ -47,9 +45,12 @@ class Scene(pyglet.event.EventDispatcher):
         self.scale_factor_x = w / self.ref_w
         self.scale_factor_y = h / self.ref_h
         self.scale_factor = math.exp(lerp(math.log(self.scale_factor_x), math.log(self.scale_factor_y), self.match_w_h))
+        self.dispatch_event("on_scene_window_resized", w, h)
 
     def on_update_scene(self, dt):
         self.dispatch_event("on_scene_updated", dt)
 
 
 Scene.register_event_type("on_scene_updated")
+# 별도 이벤트를 만들어 창 크기 변경 시 scale_factor의 재계산이 먼저 이루어지도록 함.
+Scene.register_event_type("on_scene_window_resized")

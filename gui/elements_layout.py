@@ -80,7 +80,7 @@ class CardsLayout(ElementsLayoutBase):
         def on_mouse_scroll(x: int, y: int, scroll_x: float, scroll_y: float):
             if abs(y - (self.scene.window.height//2 + self.y*self.scene.scale_factor)) > self.height*self.scene.scale_factor // 2:
                 return
-            scroll_delta: float = (scroll_x + scroll_y) * self.scroll_sensitivity
+            scroll_delta: float = (scroll_x + scroll_y) * self.scroll_sensitivity * self.scene.scale_factor
             if scroll_delta * self.input_scroll < 0:
                 self.input_scroll = scroll_delta
             else:
@@ -109,9 +109,10 @@ class CardsLayout(ElementsLayoutBase):
                 self.scroll_transition.destination_value = float(self.space * self.selected)
                 self.scroll_transition.start(time.time())
 
-        @self.scene.window.event
-        def on_resize(w: int, h: int):
-            self.dispatch_event("on_layout_modified")
+        # @self.scene.window.event
+        # def on_resize(w: int, h: int):
+        #     self.dispatch_event("on_layout_modified")
+        self.scene.push_handlers(on_scene_window_resized=lambda w,h: self.dispatch_event("on_layout_modified"))
 
     # def _nearest_index(start: float, space: float, length: int, target: float) -> int:
     #     """target과 가장 가까운 등차수열 항의 번호를 계산."""
