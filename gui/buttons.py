@@ -44,6 +44,7 @@ class SolidButton(WidgetBase):
             pressed: SolidButtonState, 
             depressed: SolidButtonState, 
             hover: Optional[SolidButtonState] = None, 
+            disenabled: Optional[SolidButtonState] = None,
             batch: Optional[pyglet.graphics.Batch] = None, 
             group: Optional[pyglet.graphics.Group] = None
         ):
@@ -64,6 +65,7 @@ class SolidButton(WidgetBase):
         self._pressed_state = pressed
         self._depressed_state = depressed
         self._hover_state = hover or depressed
+        self._disenabled_state = disenabled or depressed
         self._current_state = depressed
 
         # TODO: add `draw` method or make Batch required.
@@ -150,6 +152,14 @@ class SolidButton(WidgetBase):
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
         if not self.enabled or self._pressed:
             return
+        
+    def set_enabled(self, enabled: bool) -> None:
+        """활성 상태 설정."""
+        self.enabled = enabled
+        if enabled:
+            self.trigger_transition(self._current_state, self._disenabled_state)
+        else:
+            self.trigger_transition(self._current_state, self._depressed_state)
 
 
 SolidButton.register_event_type("on_press")

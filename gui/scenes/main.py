@@ -4,6 +4,7 @@ import pyglet
 from pyglet.math import Vec2
 
 from core import GameManager
+from gui.buttons import SolidButton, SolidButtonState
 from gui.card import Card
 from gui.color import Color
 from gui.elements_layout import CardsLayout
@@ -22,9 +23,7 @@ class MainScene(Scene):
         self.game: GameManager = GameManager.create_from_file(filepath)
         self.game_state = self.game.get_game_draw_state()
 
-        self.bg_shape = pyglet.shapes.Rectangle(
-            0,0,self.window.width, self.window.height,
-            (Color.white() * 0.4).tuple_256())
+        self.bg_sprite = pyglet.sprite.Sprite(pyglet.resource.image("background.png"))
 
         self.ui_batch = pyglet.graphics.Batch()
         self.ui_group = pyglet.graphics.Group(order=5)
@@ -36,10 +35,15 @@ class MainScene(Scene):
         self.frame_display = pyglet.window.FPSDisplay(window=self.window)
 
         self.setup_scene()
+
+        def on_window_resized(w: int, h: int):
+            self.bg_sprite.scale_x, self.bg_sprite.scale_y = self.scale_factor_x, self.scale_factor_y
+        self.push_handlers(on_scene_window_resized=on_window_resized)
         
         @self.window.event
         def on_draw():
             self.window.clear()
+            self.bg_sprite.draw()
             self.card_batch.draw()
             self.ui_batch.draw()
             self.frame_display.draw()
@@ -64,3 +68,25 @@ class MainScene(Scene):
 
         self.cards = [Card(data, self.card_layout, self.card_batch, self.card_group, self.card_thumnail_group, self.card_text_group, index=index)
                     for index, data in enumerate(self.game_state.deck)]
+
+        self.buy_button = SolidButton(
+            self, self.window.width / 2, 100, 200, 50, 3, 
+            "구매", "Neo둥근모 Pro", 20,
+            pressed=SolidButtonState(
+                box_color=Color.white(), border_color=Color.white(),
+                label_color=Color.black(), transition=0.3
+            ),
+            depressed=SolidButtonState(
+                box_color=Color.black(), border_color=Color.white(),
+                label_color=Color.white(), transition=0.3
+            ),
+            hover=SolidButtonState(
+                box_color=Color.white(), border_color=Color.white(),
+                label_color=Color.black(), transition=0.3
+            ),
+            disenabled=SolidButtonState(
+                box_color=Color.white()*0.6, border_color=Color.white()*0.6,
+                label_color=Color.black(), transition=0.3
+            ),
+            batch=self.ui_batch, group=self.ui_group
+        )

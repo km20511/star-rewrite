@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Tuple
 
 import pyglet
-
+from pyglet.math import Vec2
 from pyglet.gui import WidgetBase
 
 class AnchorPreset(Enum):
@@ -47,3 +47,8 @@ class AnchoredWidget(WidgetBase):
         """Preset으로부터 실제 Anchor 반환."""
         value: int = preset.value
         return ((value % 3) / 2.0, (value // 3) / 2.0)
+
+    def world_coord(self, x: float, y: float) -> Vec2:
+        """Anchor와 Pivot을 기반으로 화면 기준 좌표를 계산."""
+        return (Vec2(self.anchor[0] * self.window.width, self.anchor[1], self.window.height)
+                + Vec2(x, y) - Vec2(self.pivot[0]*self.width, self.pivot[1]*self.height))
