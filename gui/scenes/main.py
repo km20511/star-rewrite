@@ -4,6 +4,8 @@ import pyglet
 from pyglet.math import Vec2
 
 from core import GameManager
+from core.enums import CardType
+from gui.anchored_widget import AnchorPreset
 from gui.buttons import SolidButton, SolidButtonState
 from gui.card import Card
 from gui.color import Color
@@ -46,7 +48,7 @@ class MainScene(Scene):
             self.bg_sprite.draw()
             self.card_batch.draw()
             self.ui_batch.draw()
-            self.frame_display.draw()
+            # self.frame_display.draw()
 
     def setup_scene(self):
         """GameDrawState를 이용해 게임 상태 초기화."""
@@ -63,6 +65,7 @@ class MainScene(Scene):
             self, len(self.game_state.deck),
             center_scale=1.4,
             scale_width=0.4,
+            selected=0,
             scroll_sensitivity=7.0
         )
 
@@ -70,8 +73,8 @@ class MainScene(Scene):
                     for index, data in enumerate(self.game_state.deck)]
 
         self.buy_button = SolidButton(
-            self, self.window.width / 2, 100, 200, 50, 3, 
-            "구매", "Neo둥근모 Pro", 20,
+            self, x=0, y=100, width=200, height=50, border=3, 
+            text="구매", font_family="Neo둥근모 Pro", font_size=20,
             pressed=SolidButtonState(
                 box_color=Color.white(), border_color=Color.white(),
                 label_color=Color.black(), transition=0.3
@@ -88,5 +91,22 @@ class MainScene(Scene):
                 box_color=Color.white()*0.6, border_color=Color.white()*0.6,
                 label_color=Color.black(), transition=0.3
             ),
+            anchor=AnchorPreset.BottomCenter,
+            pivot=AnchorPreset.BottomCenter,
+            scale_factor=self.scale_factor,
             batch=self.ui_batch, group=self.ui_group
         )
+
+        self.card_layout.push_handlers(on_selection_changed=lambda index: self.buy_button.set_enabled(self._check_purchasable(index)))
+        self.buy_button.set_enabled(self._check_purchasable(0))
+
+    def _check_purchasable(self, index: int) -> bool:
+        """카드가 구매 가능한지 확인."""
+        if not (0 <= index < len(self.game_state.deck)):
+            return False
+        card = self.game_state.deck[index]
+        if not card.is_front_face or self.game_state.player_remaining_action <= 0:
+            return False
+        return (self.game_state.player_health + self.game_state.player_attack >= card.current_cost
+                if card.type == CardType.Enemy
+                else self.game_state.player_money >= card.current_cost)

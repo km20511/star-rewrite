@@ -95,6 +95,7 @@ class CardsLayout(ElementsLayoutBase):
                 self.scroll_transition.start_value = self.scroll_value
                 self.scroll_transition.destination_value = float(self.space * self.selected)
                 self.scroll_transition.start(time.time())
+                self.dispatch_event("on_selection_changed", self.selected)
 
         @self.scene.window.event
         def on_key_press(symbol, modifier):
@@ -108,6 +109,7 @@ class CardsLayout(ElementsLayoutBase):
                 self.scroll_transition.start_value = self.scroll_value
                 self.scroll_transition.destination_value = float(self.space * self.selected)
                 self.scroll_transition.start(time.time())
+                self.dispatch_event("on_selection_changed", self.selected)
 
         # @self.scene.window.event
         # def on_resize(w: int, h: int):
@@ -136,6 +138,8 @@ class CardsLayout(ElementsLayoutBase):
         """가장 왼쪽 카드의 기준점부터 가장 오른쪽 카드 기준점까지의 거리 계산.
         화면비에 영향을 받지 않는 값."""
         return self.space * (self.length-1)
+
+CardsLayout.register_event_type("on_selection_changed")
     
 
 class ItemsLayout(ElementsLayoutBase):

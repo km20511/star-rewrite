@@ -41,7 +41,15 @@ class AnchoredWidget(WidgetBase):
             if isinstance(pivot, AnchorPreset) else pivot
         )
         self.scale_factor = scale_factor
-        super().__init__(x, y, width, height)
+        self.base_pos: Vec2 = Vec2(x, y)
+        self.base_width, self.base_height = width, height
+        self._width, self._height = width * scale_factor, height * scale_factor
+        super().__init__(*self.world_coord(x, y), width, height)
+
+    def update_layout(self, scale_factor: float = -1.0):
+        if scale_factor > 0: self.scale_factor = scale_factor
+        self._width, self._height = self.base_width * scale_factor, self.base_height * scale_factor
+        self._x, self._y = self.world_coord(*self.base_pos)
 
     def anchor_from_preset(self, preset: AnchorPreset) -> Tuple[float, float]:
         """Preset으로부터 실제 Anchor 반환."""
@@ -50,5 +58,5 @@ class AnchoredWidget(WidgetBase):
 
     def world_coord(self, x: float, y: float) -> Vec2:
         """Anchor와 Pivot을 기반으로 화면 기준 좌표를 계산."""
-        return (Vec2(self.anchor[0] * self.window.width, self.anchor[1], self.window.height)
-                + Vec2(x, y) - Vec2(self.pivot[0]*self.width, self.pivot[1]*self.height))
+        return (Vec2(self.anchor[0] * self.window.width, self.anchor[1] * self.window.height)
+                + Vec2(x, y)*self.scale_factor - Vec2(self.pivot[0]*self.width, self.pivot[1]*self.height))

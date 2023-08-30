@@ -106,10 +106,10 @@ class PlayerHUD:
         for i, val_type in enumerate(HUDValueType):
             top_left: Vec2 = Vec2(self.ui_space + self.ui_width, 0)*i + self.top_left
             bottom_left: Vec2 = Vec2(top_left.x, self.scene.ref_h - (top_left.y + self.ui_height))
-            self.placeholder_sprites[i].position = *(bottom_left*self.scene.scale_factor), 0
-            self.placeholder_sprites[i].scale = self.scene.scale_factor
-            self.icon_sprites[val_type].position = *((bottom_left + Vec2(0, self.ui_height/2) + ICON_OFFSET)*self.scene.scale_factor), 0
-            self.icon_sprites[val_type].scale = self.scene.scale_factor
-            self.labels[val_type].position = *((bottom_left + Vec2(0, self.ui_height/2) + LABEL_OFFSET)*self.scene.scale_factor), 0
-            self.labels[val_type].width = (self.ui_width - ICON_SIZE)*self.scene.scale_factor
-            self.labels[val_type].font_size = FONT_SIZE*self.scene.scale_factor
+            self.placeholder_sprites[i].position = *(bottom_left*self.scene.scale_factor_y), 0
+            self.placeholder_sprites[i].scale = self.scene.scale_factor_y
+            self.icon_sprites[val_type].position = *((bottom_left + Vec2(0, self.ui_height/2) + ICON_OFFSET)*self.scene.scale_factor_y), 0
+            self.icon_sprites[val_type].scale = self.scene.scale_factor_y
+            self.labels[val_type].position = *((bottom_left + Vec2(0, self.ui_height/2) + LABEL_OFFSET)*self.scene.scale_factor_y), 0
+            self.labels[val_type].width = (self.ui_width - ICON_SIZE)*self.scene.scale_factor_y
+            self.labels[val_type].font_size = FONT_SIZE*self.scene.scale_factor_y

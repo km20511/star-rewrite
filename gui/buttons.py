@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 import time
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING, Tuple
 
 import pyglet
 from pyglet.gui import WidgetBase
+from gui.anchored_widget import AnchorPreset, AnchoredWidget
 
 from gui.color import Color
 from gui.transitions import Transition
@@ -27,7 +28,7 @@ class SolidButtonState:
         )
 
 
-class SolidButton(WidgetBase):
+class SolidButton(AnchoredWidget):
     """텍스트가 있는 단색 버튼.
     'on_press'와 'on_release' 이벤트를 호출함.
     """
@@ -43,6 +44,9 @@ class SolidButton(WidgetBase):
             font_size: float,
             pressed: SolidButtonState, 
             depressed: SolidButtonState, 
+            anchor: Tuple[float, float] | AnchorPreset = AnchorPreset.MiddleCenter,
+            pivot: Tuple[float, float] | AnchorPreset = AnchorPreset.MiddleCenter,
+            scale_factor: float = 1.0,
             hover: Optional[SolidButtonState] = None, 
             disenabled: Optional[SolidButtonState] = None,
             batch: Optional[pyglet.graphics.Batch] = None, 
@@ -60,13 +64,15 @@ class SolidButton(WidgetBase):
             batch: 이 버튼의 Batch 객체.
             group: 이 버튼이 속하는 Group.
         """
-        super().__init__(x, y, width, height)
+        super().__init__(scene.window, x, y, width, height, anchor, pivot, scale_factor)
         self._scene = scene
         self._pressed_state = pressed
         self._depressed_state = depressed
         self._hover_state = hover or depressed
         self._disenabled_state = disenabled or depressed
         self._current_state = depressed
+
+        self.base_font_size: float = font_size
 
         # TODO: add `draw` method or make Batch required.
         self._batch = batch or pyglet.graphics.Batch()
@@ -93,7 +99,7 @@ class SolidButton(WidgetBase):
             self._pressed_state.transition
         )
 
-        self._scene.push_handlers(on_scene_updated = self.update_transition)
+        self._scene.push_handlers(on_scene_updated = self.update_transition, on_scene_window_resized=lambda w,h: self.update_layout())
         self._scene.window.push_handlers(
             self.on_mouse_press,
             self.on_mouse_release,
@@ -103,7 +109,14 @@ class SolidButton(WidgetBase):
         self._pressed = False
 
     def _update_position(self):
-        self._shape.position = self._x, self._y, 0
+        self._shape.position = self._x, self._y
+
+    def update_layout(self):
+        super().update_layout(self._scene.scale_factor)
+        self._update_position()
+        self._shape.width, self._shape.height = self._width, self._height
+        self._label.x, self._label.y = self._x + self._width/2, self._y + self._height/2
+        self._label.font_size = self.base_font_size * self._scene.scale_factor
 
     def trigger_transition(self, start: SolidButtonState, end: SolidButtonState):
         self._state_transition.start_value = start
@@ -155,8 +168,9 @@ class SolidButton(WidgetBase):
         
     def set_enabled(self, enabled: bool) -> None:
         """활성 상태 설정."""
+        if not self.enabled ^ enabled: return
         self.enabled = enabled
-        if enabled:
+        if not enabled:
             self.trigger_transition(self._current_state, self._disenabled_state)
         else:
             self.trigger_transition(self._current_state, self._depressed_state)
