@@ -143,3 +143,8 @@ class Card:
             self.sprite_back.position = (*self.transform.position, 2)
             self.sprite_back.rotation = self.sprite_back.rotation
             self.sprite_back.width, self.sprite_back.height = self.base_width*self.transform.scale.x, self.base_height*self.transform.scale.y
+    
+    def set_front_face(self, is_front_face: bool):
+        """앞/뒷면 설정."""
+        self.data.is_front_face = is_front_face
+        self.update_state()

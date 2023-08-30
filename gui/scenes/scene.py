@@ -21,6 +21,7 @@ class Scene(pyglet.event.EventDispatcher):
         self.window = window
         self.context = context
         self.active: bool = False
+        self.user_controllable = True
 
     def load(self):
         """저장된 Window 객체에서 Scene을 구성함."""
@@ -49,6 +50,9 @@ class Scene(pyglet.event.EventDispatcher):
 
     def on_update_scene(self, dt):
         self.dispatch_event("on_scene_updated", dt)
+
+    def set_user_controllable(self, controllable: bool):
+        self.user_controllable = controllable
 
 
 Scene.register_event_type("on_scene_updated")

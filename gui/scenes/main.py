@@ -1,10 +1,11 @@
-from typing import Final
+from typing import Final, Optional
 
 import pyglet
 from pyglet.math import Vec2
 
 from core import GameManager
-from core.enums import CardType
+from core.enums import CardType, DrawEventType
+from core.obj_data_formats import DrawEvent, ItemDrawData
 from gui.anchored_widget import AnchorPreset
 from gui.buttons import SolidButton, SolidButtonState
 from gui.card import Card
@@ -102,7 +103,7 @@ class MainScene(Scene):
 
     def _check_purchasable(self, index: int) -> bool:
         """카드가 구매 가능한지 확인."""
-        if not (0 <= index < len(self.game_state.deck)):
+        if not (0 <= index < len(self.game_state.deck) or self.user_controllable):
             return False
         card = self.game_state.deck[index]
         if not card.is_front_face or self.game_state.player_remaining_action <= 0:
@@ -110,3 +111,56 @@ class MainScene(Scene):
         return (self.game_state.player_health + self.game_state.player_attack >= card.current_cost
                 if card.type == CardType.Enemy
                 else self.game_state.player_money >= card.current_cost)
+    
+    def process_draw_events(self) -> None:
+        """현재까지 발생한 DrawEvent를 순서대로 처리."""
+        draw_events = self.game.get_draw_events()
+        self.set_user_controllable(False)
+        invoke_after: float = 0.0
+        for event in draw_events:
+            if isinstance(event, DrawEvent):
+                match (event.event_type):
+                    case DrawEventType.TurnBegin:
+                        raise NotImplementedError
+                    case DrawEventType.TurnEnd:
+                        raise NotImplementedError
+                    case DrawEventType.CardShown:
+                        if (card := self.find_card_by_id(event.target_id)) is not None:
+                            pyglet.clock.schedule_once(card.set_front_face, invoke_after, is_front_face=bool(event.current))
+                    case DrawEventType.CardMoved:
+                        raise NotImplementedError
+                    case DrawEventType.CardPurchased:
+                        raise NotImplementedError
+                    case DrawEventType.CardDestroyed:
+                        raise NotImplementedError
+                    case DrawEventType.CardCostChanged:
+                        raise NotImplementedError
+                    case DrawEventType.ItemUsed:
+                        raise NotImplementedError
+                    case DrawEventType.ItemDestroyed:
+                        raise NotImplementedError
+                    case DrawEventType.PlayerWon:
+                        raise NotImplementedError
+                    case DrawEventType.PlayerLost:
+                        raise NotImplementedError
+                    case DrawEventType.PlayerStatChanged:
+                        raise NotImplementedError
+            elif isinstance(event, ItemDrawData):
+                # 아이템 생성 이벤트.
+                raise NotImplementedError
+            else:
+                # 카드 생성 이벤트.
+                raise NotImplementedError
+        pyglet.clock.schedule_once(self.set_user_controllable, invoke_after, controllable=True)
+
+    def find_card_by_id(self, id: int) -> Optional[Card]:
+        """주어진 id를 가진 Card를 탐색."""
+        for card in self.cards:
+            if card.data.id == id:
+                return card
+        return None
+            
+    def set_user_controllable(self, controllable: bool) -> None:
+        """(애니메이션 재생 등의 목적으로) 사용자의 입력을 받을지 설정함."""
+        super().set_user_controllable(controllable)
+        raise NotImplementedError

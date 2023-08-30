@@ -116,7 +116,7 @@ class SolidButton(AnchoredWidget):
         self._update_position()
         self._shape.width, self._shape.height = self._width, self._height
         self._label.x, self._label.y = self._x + self._width/2, self._y + self._height/2
-        self._label.font_size = self.base_font_size * self._scene.scale_factor
+        self._label.font_size = self.base_font_size * self.scale_factor
 
     def trigger_transition(self, start: SolidButtonState, end: SolidButtonState):
         self._state_transition.start_value = start
@@ -168,9 +168,8 @@ class SolidButton(AnchoredWidget):
         
     def set_enabled(self, enabled: bool) -> None:
         """활성 상태 설정."""
-        if not self.enabled ^ enabled: return
         self.enabled = enabled
-        if not enabled:
+        if enabled:
             self.trigger_transition(self._current_state, self._disenabled_state)
         else:
             self.trigger_transition(self._current_state, self._depressed_state)
