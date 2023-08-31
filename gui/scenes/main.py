@@ -1,17 +1,17 @@
-from typing import Final, Optional
+from typing import Dict, Final, Optional, Tuple
 
 import pyglet
 from pyglet.math import Vec2
 
 from core import GameManager
-from core.enums import CardType, DrawEventType
+from core.enums import CardType, DrawEventType, PlayerStat
 from core.obj_data_formats import DrawEvent, ItemDrawData
 from gui.anchored_widget import AnchorPreset
 from gui.buttons import SolidButton, SolidButtonState
 from gui.card import Card
 from gui.color import Color
 from gui.elements_layout import CardsLayout
-from gui.player_hud import PlayerHUD
+from gui.player_hud import HUDValueType, PlayerHUD
 from gui.scenes import Scene
 
 CONTENTS_FONT: Final[str] = "Neo둥근모 Pro"
@@ -122,9 +122,10 @@ class MainScene(Scene):
             if isinstance(event, DrawEvent):
                 match (event.event_type):
                     case DrawEventType.TurnBegin:
-                        raise NotImplementedError
+                        pyglet.clock.schedule_once(self.hud.set_states, invoke_after, states={HUDValueType.Turn: (event.current, True)}, duration=2.0)
+                        invoke_after += 2.0
                     case DrawEventType.TurnEnd:
-                        raise NotImplementedError
+                        pass
                     case DrawEventType.CardShown:
                         # 연속된 CardShown 이벤트를 일괄 처리.
                         while True:
@@ -147,7 +148,7 @@ class MainScene(Scene):
                             draw_events.pop(0)
                         invoke_after += 0.5
                     case DrawEventType.CardPurchased:
-                        raise NotImplementedError
+                        pass
                     case DrawEventType.CardDestroyed:
                         raise NotImplementedError
                     case DrawEventType.CardCostChanged:
@@ -161,7 +162,23 @@ class MainScene(Scene):
                     case DrawEventType.PlayerLost:
                         raise NotImplementedError
                     case DrawEventType.PlayerStatChanged:
-                        raise NotImplementedError
+                        changed_table: Dict[HUDValueType, Tuple[int, bool]] = {}
+                        while True:
+                            key = {
+                                PlayerStat.Action: HUDValueType.Action,
+                                PlayerStat.Attack: HUDValueType.Attack,
+                                PlayerStat.Health: HUDValueType.Health,
+                                PlayerStat.Money: HUDValueType.Money
+                            }[PlayerStat(event.target_id)]
+                            changed_table[key] = (event.current, True)
+                            if not (len(draw_events) > 0 and isinstance(draw_events[0], DrawEvent)
+                                    and draw_events[0].event_type == DrawEventType.PlayerStatChanged):
+                                break
+                            event = draw_events[0]
+                            draw_events.pop(0)
+                        pyglet.clock.schedule_once(self.hud.set_states, invoke_after, states=changed_table, duration=2.0)
+                        invoke_after += 2.0
+
             elif isinstance(event, ItemDrawData):
                 # 아이템 생성 이벤트.
                 raise NotImplementedError
