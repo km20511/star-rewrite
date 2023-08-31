@@ -309,6 +309,11 @@ class GameManager:
         card: Optional[Card] = self.__deck.get_card_by_id(id)
         if card is None or not self.can_buy_card(card): return False
         self.__game_state.player_remaining_action -= 1
+        self.__event_manager.push_draw_event(DrawEvent(
+            DrawEventType.PlayerStatChanged,
+            PlayerStat.Action.value,
+            self.__game_state.player_remaining_action+1, self.__game_state.player_remaining_action
+        ))
 
         match (card.card_data.type):
             case CardType.Enemy:
@@ -351,6 +356,11 @@ class GameManager:
                     ))
             case _:
                 self.__game_state.player_money -= card.modified_cost
+                self.__event_manager.push_draw_event(DrawEvent(
+                    DrawEventType.PlayerStatChanged,
+                    PlayerStat.Money.value,
+                    self.__game_state.player_money+card.modified_cost, self.__game_state.player_money
+                ))
         
         self.__event_manager.push_draw_event(DrawEvent(
             DrawEventType.CardPurchased,
@@ -383,6 +393,11 @@ class GameManager:
         item: Optional[Item] = self.__inventory.get_item_by_id(id)
         if item is None or not self.can_use_item(id): return False
         self.__game_state.player_remaining_action -= 1
+        self.__event_manager.push_draw_event(DrawEvent(
+            DrawEventType.PlayerStatChanged,
+            PlayerStat.Action.value,
+            self.__game_state.player_remaining_action+1, self.__game_state.player_remaining_action
+        ))
         self.__event_manager.push_draw_event(DrawEvent(
             DrawEventType.ItemUsed,
             item.id,
