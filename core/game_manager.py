@@ -320,6 +320,11 @@ class GameManager:
                         previous,
                         previous - card.modified_cost
                     )
+                    self.__event_manager.push_draw_event(DrawEvent(
+                        DrawEventType.PlayerStatChanged,
+                        PlayerStat.Attack.value,
+                        previous, previous - card.modified_cost
+                    ))
                 else:
                     previous_atk = self.__game_state.player_attack
                     previous_health = self.__game_state.player_health
@@ -329,11 +334,21 @@ class GameManager:
                         PlayerStat.Attack,
                         previous_atk, 0
                     )
+                    self.__event_manager.push_draw_event(DrawEvent(
+                        DrawEventType.PlayerStatChanged,
+                        PlayerStat.Attack.value,
+                        previous_atk, 0
+                    ))
                     self.__event_manager.on_player_stat_changed(
                         PlayerStat.Health,
                         previous_health,
                         self.__game_state.player_health
                     )
+                    self.__event_manager.push_draw_event(DrawEvent(
+                        DrawEventType.PlayerStatChanged,
+                        PlayerStat.Health.value,
+                        previous_health, self.__game_state.player_health
+                    ))
             case _:
                 self.__game_state.player_money -= card.modified_cost
         

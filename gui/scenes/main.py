@@ -49,7 +49,7 @@ class MainScene(Scene):
             self.bg_sprite.draw()
             self.card_batch.draw()
             self.ui_batch.draw()
-            # self.frame_display.draw()
+            self.frame_display.draw()
 
     def setup_scene(self):
         """GameDrawState를 이용해 게임 상태 초기화."""
@@ -117,7 +117,8 @@ class MainScene(Scene):
         draw_events = self.game.get_draw_events()
         self.set_user_controllable(False)
         invoke_after: float = 0.0
-        for event in draw_events:
+        while len(draw_events) > 0:
+            event = draw_events.pop(0)
             if isinstance(event, DrawEvent):
                 match (event.event_type):
                     case DrawEventType.TurnBegin:
@@ -125,10 +126,26 @@ class MainScene(Scene):
                     case DrawEventType.TurnEnd:
                         raise NotImplementedError
                     case DrawEventType.CardShown:
-                        if (card := self.find_card_by_id(event.target_id)) is not None:
-                            pyglet.clock.schedule_once(card.set_front_face, invoke_after, is_front_face=bool(event.current))
+                        # 연속된 CardShown 이벤트를 일괄 처리.
+                        while True:
+                            if (card := self.find_card_by_id(event.target_id)) is not None:
+                                pyglet.clock.schedule_once(card.set_front_face, invoke_after, is_front_face=bool(event.current))
+                            if not (len(draw_events) > 0 and isinstance(draw_events[0], DrawEvent)
+                                    and draw_events[0].event_type == DrawEventType.CardShown):
+                                break
+                            event = draw_events[0]
+                            draw_events.pop(0)
+                        invoke_after += 0.3 # 0.3초 지연.
                     case DrawEventType.CardMoved:
-                        raise NotImplementedError
+                        while True:
+                            if (card := self.find_card_by_id(event.target_id)) is not None:
+                                pyglet.clock.schedule_once(card.move_to, invoke_after, new_index=event.current, duration=0.5)
+                            if not (len(draw_events) > 0 and isinstance(draw_events[0], DrawEvent)
+                                    and draw_events[0].event_type == DrawEventType.CardMoved):
+                                break
+                            event = draw_events[0]
+                            draw_events.pop(0)
+                        invoke_after += 0.5
                     case DrawEventType.CardPurchased:
                         raise NotImplementedError
                     case DrawEventType.CardDestroyed:

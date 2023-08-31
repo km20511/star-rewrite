@@ -169,7 +169,7 @@ class SolidButton(AnchoredWidget):
     def set_enabled(self, enabled: bool) -> None:
         """활성 상태 설정."""
         self.enabled = enabled
-        if enabled:
+        if not enabled:
             self.trigger_transition(self._current_state, self._disenabled_state)
         else:
             self.trigger_transition(self._current_state, self._depressed_state)

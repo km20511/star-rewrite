@@ -1,3 +1,4 @@
+import time
 from typing import Dict, Final, Tuple
 
 import pyglet
@@ -10,6 +11,8 @@ from gui.elements_layout import CardsLayout
 from gui.transform import Transform2D
 from pyglet.graphics import Batch, Group
 from pyglet.sprite import Sprite
+
+from gui.transitions import Transition
 
 CARD_SPRITE: Final[Dict[CardType, Tuple[str, str]]] = {
     CardType.Enemy: ("card_enemy_front.png", "card_enemy_back.png"),
@@ -47,6 +50,7 @@ class Card:
             layout.get_rotation(index),
             Vec2(1, 1) * layout.get_scale(index)
         )
+        self.transition = Transition[Transform2D](self.transform, self.transform, 0.5)
 
         image_front = pyglet.resource.image(CARD_SPRITE[data.type][0])
         try:
@@ -90,7 +94,12 @@ class Card:
         )
 
         self.layout.push_handlers(on_layout_modified=lambda : self.update_state())
+        self.layout.scene.push_handlers(on_scene_updated=self._update_transition)
         self.update_state()
+    
+    def _update_transition(self, dt: float):
+        if self.transition.active:
+            self.transform = self.transition.update(time.time())
 
     def update_state(self):
         """현재 데이터를 기준으로 상태를 갱신."""
@@ -98,7 +107,7 @@ class Card:
             self.layout.get_position(self.index),
             self.layout.get_rotation(self.index),
             Vec2(1, 1) * self.layout.get_scale(self.index)
-        )
+        ) if not self.transition.active else self.transition.update(time.time())
         trs = self.transform.matrix
 
         if self.data.is_front_face:
@@ -148,3 +157,18 @@ class Card:
         """앞/뒷면 설정."""
         self.data.is_front_face = is_front_face
         self.update_state()
+
+    def move_to(self, new_index: int, duration: float = 0.5):
+        """주어진 인덱스로 이동함."""
+        if duration < 0.05:
+            # 전이를 수행하지 않음.
+            self.index = new_index
+            self.update_state()
+            return
+        self.transition.start_value = self.transform
+        self.transition.destination_value = Transform2D(
+            self.layout.get_position(new_index),
+            self.layout.get_rotation(new_index),
+            self.layout.get_scale(new_index)
+        )
+        self.transition.start(time.time(), duration)

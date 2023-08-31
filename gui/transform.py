@@ -8,7 +8,8 @@ class Transform2D:
         self.__pos = pos
         self.__rot = rot
         self.__scale = scale
-        self._calc_matrix()
+        self.__dirty = True
+        self.__mat = Mat3()
 
     @property
     def position(self) -> Vec2:
@@ -17,7 +18,7 @@ class Transform2D:
     @position.setter
     def position(self, val: Vec2) -> None:
         self.__pos = val
-        self._calc_matrix()
+        self.__dirty = True
 
     @property
     def rotation(self) -> float:
@@ -26,7 +27,7 @@ class Transform2D:
     @rotation.setter
     def rotation(self, val: float) -> None:
         self.__rot = val
-        self._calc_matrix()
+        self.__dirty = True
 
     @property
     def scale(self) -> Vec2:
@@ -35,13 +36,16 @@ class Transform2D:
     @scale.setter
     def scale(self, val: Vec2) -> None:
         self.__scale = val
-        self._calc_matrix()
+        self.__dirty = True
 
     def _calc_matrix(self) -> None:
         self.__mat = trs_matrix(self.__pos, self.__rot, self.__scale)
 
     @property
     def matrix(self) -> Mat3:
+        if self.__dirty:
+            self._calc_matrix()
+            self.__dirty = False
         return self.__mat
     
     @staticmethod
