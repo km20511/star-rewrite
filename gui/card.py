@@ -172,3 +172,19 @@ class Card:
             self.layout.get_scale(new_index)
         )
         self.transition.start(time.time(), duration)
+
+    def set_cost(self, new_cost: int):
+        """표시되는 비용을 변경."""
+        if self.data.type == CardType.Event: return
+        if (delta := new_cost - self.data.base_cost) == 0:
+            self.label_cost.color = Color.black().tuple_256()
+        elif delta > 0 ^ self.data.type == CardType.Item:
+            self.label_cost.color = Color.green().tuple_256()
+        else:
+            self.label_cost.color = Color.red().tuple_256()
+        self.label_cost.text = str(new_cost)
+        self.update_state()
+
+    def delete(self):
+        """이 카드를 파괴함."""
+        raise NotImplementedError

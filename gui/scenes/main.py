@@ -1,4 +1,4 @@
-from typing import Dict, Final, Optional, Tuple
+from typing import Dict, Final, List, Optional, Tuple
 
 import pyglet
 from pyglet.math import Vec2
@@ -112,6 +112,16 @@ class MainScene(Scene):
                 if card.type == CardType.Enemy
                 else self.game_state.player_money >= card.current_cost)
     
+    def _remove_card(self, card: Card):
+        card.delete()
+        self.cards.remove(card)
+
+    def _rearrange_card(self, changes: List[Tuple[Card, int]]):
+        """주어진 카드 이동 정보를 이용해 self.cards를 재배치.
+        
+        도중에 전체 길이의 변화나 위치 충돌 등이 없다고 전제함."""
+        raise NotImplementedError
+    
     def process_draw_events(self) -> None:
         """현재까지 발생한 DrawEvent를 순서대로 처리."""
         draw_events = self.game.get_draw_events()
@@ -138,23 +148,42 @@ class MainScene(Scene):
                             draw_events.pop(0)
                         invoke_after += 0.3 # 0.3초 지연.
                     case DrawEventType.CardMoved:
+                        moved_table: List[Tuple[Card, int]] = []
                         while True:
                             if (card := self.find_card_by_id(event.target_id)) is not None:
                                 pyglet.clock.schedule_once(card.move_to, invoke_after, new_index=event.current, duration=0.5)
+                                moved_table.append((card, event.current))
                             if not (len(draw_events) > 0 and isinstance(draw_events[0], DrawEvent)
                                     and draw_events[0].event_type == DrawEventType.CardMoved):
                                 break
                             event = draw_events[0]
                             draw_events.pop(0)
+                        self._rearrange_card(changes=moved_table)
                         invoke_after += 0.5
                     case DrawEventType.CardPurchased:
                         pass
                     case DrawEventType.CardDestroyed:
-                        raise NotImplementedError
+                        while True:
+                            if (card := self.find_card_by_id(event.target_id)) is not None:
+                                pyglet.clock.schedule_once(self._remove_card, invoke_after, card=card)
+                            if not (len(draw_events) > 0 and isinstance(draw_events[0], DrawEvent)
+                                    and draw_events[0].event_type == DrawEventType.CardDestroyed):
+                                break
+                            event = draw_events[0]
+                            draw_events.pop(0)
+                        invoke_after += 0.5
                     case DrawEventType.CardCostChanged:
-                        raise NotImplementedError
+                        while True:
+                            if (card := self.find_card_by_id(event.target_id)) is not None:
+                                pyglet.clock.schedule_once(card.set_cost, invoke_after, new_cost=event.current)
+                            if not (len(draw_events) > 0 and isinstance(draw_events[0], DrawEvent)
+                                    and draw_events[0].event_type == DrawEventType.CardCostChanged):
+                                break
+                            event = draw_events[0]
+                            draw_events.pop(0)
+                        invoke_after += 0.5
                     case DrawEventType.ItemUsed:
-                        raise NotImplementedError
+                        pass
                     case DrawEventType.ItemDestroyed:
                         raise NotImplementedError
                     case DrawEventType.PlayerWon:
