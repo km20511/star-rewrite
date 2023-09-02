@@ -1,4 +1,4 @@
-from typing import Dict, Final, List, Optional, Tuple
+from typing import Any, Dict, Final, List, Optional, Tuple
 
 import pyglet
 from pyglet.math import Vec2
@@ -10,7 +10,8 @@ from gui.anchored_widget import AnchorPreset
 from gui.buttons import SolidButton, SolidButtonState
 from gui.card import Card
 from gui.color import Color
-from gui.elements_layout import CardsLayout
+from gui.elements_layout import CardsLayout, ItemsLayout
+from gui.inventory_ui import InventoryUI
 from gui.player_hud import HUDValueType, PlayerHUD
 from gui.scenes import Scene
 
@@ -67,14 +68,14 @@ class MainScene(Scene):
             center_scale=1.4,
             scale_width=0.4,
             selected=0,
-            scroll_sensitivity=7.0
+            scroll_sensitivity=15.0
         )
 
         self.cards = [Card(data, self.card_layout, self.card_batch, self.card_group, self.card_thumnail_group, self.card_text_group, index=index)
                     for index, data in enumerate(self.game_state.deck)]
 
         self.buy_button = SolidButton(
-            self, x=0, y=100, width=200, height=50, border=3, 
+            self, x=0, y=130, width=200, height=50, border=3, 
             text="구매", font_family="Neo둥근모 Pro", font_size=20,
             pressed=SolidButtonState(
                 box_color=Color.white(), border_color=Color.white(),
@@ -97,6 +98,16 @@ class MainScene(Scene):
             scale_factor=self.scale_factor,
             batch=self.ui_batch, group=self.ui_group
         )
+
+        self.item_layout = ItemsLayout(self, 10, space=60, y=60, height=50)
+        self.inventory = InventoryUI(
+            self, 
+            layout=self.item_layout, 
+            batch=self.ui_batch,
+            ui_group=self.ui_group,
+            icon_size=50)
+        self.inventory.push_item(ItemDrawData(1234, "입문자의 목검", "item_wooden_sword.png", "사용 시: 이번 턴에만 공격력을 2 얻습니다."))
+        self.inventory.push_item(ItemDrawData(2382, "아르바이트 수행", "item_parttime_job.png", "사용 시: 3골드를 얻습니다."))
 
         self.card_layout.push_handlers(on_selection_changed=lambda index: self.buy_button.set_enabled(self._check_purchasable(index)))
         self.buy_button.set_enabled(self._check_purchasable(0))
@@ -121,6 +132,13 @@ class MainScene(Scene):
         
         도중에 전체 길이의 변화나 위치 충돌 등이 없다고 전제함."""
         raise NotImplementedError
+
+    def _pop_same_drawevents(self, drawevents: List[DrawEvent | Any], target: DrawEventType) -> List[DrawEvent]:
+        """같은 종류의 연속된 DrawEvent를 전부 뽑아 옴."""
+        result: List[DrawEvent] = []
+        while len(drawevents) > 0 and isinstance(drawevents[0], DrawEvent) and drawevents[0].event_type == target:
+            result.append(drawevents.pop(0))
+        return result
     
     def process_draw_events(self) -> None:
         """현재까지 발생한 DrawEvent를 순서대로 처리."""
@@ -138,49 +156,29 @@ class MainScene(Scene):
                         pass
                     case DrawEventType.CardShown:
                         # 연속된 CardShown 이벤트를 일괄 처리.
-                        while True:
-                            if (card := self.find_card_by_id(event.target_id)) is not None:
-                                pyglet.clock.schedule_once(card.set_front_face, invoke_after, is_front_face=bool(event.current))
-                            if not (len(draw_events) > 0 and isinstance(draw_events[0], DrawEvent)
-                                    and draw_events[0].event_type == DrawEventType.CardShown):
-                                break
-                            event = draw_events[0]
-                            draw_events.pop(0)
+                        for i in event, *self._pop_same_drawevents(draw_events, DrawEventType.CardShown):
+                            if (card := self.find_card_by_id(i.target_id)) is not None:
+                                pyglet.clock.schedule_once(card.set_front_face, invoke_after, is_front_face=bool(i.current))
                         invoke_after += 0.3 # 0.3초 지연.
                     case DrawEventType.CardMoved:
                         moved_table: List[Tuple[Card, int]] = []
-                        while True:
-                            if (card := self.find_card_by_id(event.target_id)) is not None:
-                                pyglet.clock.schedule_once(card.move_to, invoke_after, new_index=event.current, duration=0.5)
-                                moved_table.append((card, event.current))
-                            if not (len(draw_events) > 0 and isinstance(draw_events[0], DrawEvent)
-                                    and draw_events[0].event_type == DrawEventType.CardMoved):
-                                break
-                            event = draw_events[0]
-                            draw_events.pop(0)
+                        for i in event, *self._pop_same_drawevents(draw_events, DrawEventType.CardMoved):
+                            if (card := self.find_card_by_id(i.target_id)) is not None:
+                                pyglet.clock.schedule_once(card.move_to, invoke_after, new_index=i.current, duration=0.5)
+                                moved_table.append((card, i.current))
                         self._rearrange_card(changes=moved_table)
                         invoke_after += 0.5
                     case DrawEventType.CardPurchased:
                         pass
                     case DrawEventType.CardDestroyed:
-                        while True:
-                            if (card := self.find_card_by_id(event.target_id)) is not None:
+                        for i in event, *self._pop_same_drawevents(draw_events, DrawEventType.CardDestroyed):
+                            if (card := self.find_card_by_id(i.target_id)) is not None:
                                 pyglet.clock.schedule_once(self._remove_card, invoke_after, card=card)
-                            if not (len(draw_events) > 0 and isinstance(draw_events[0], DrawEvent)
-                                    and draw_events[0].event_type == DrawEventType.CardDestroyed):
-                                break
-                            event = draw_events[0]
-                            draw_events.pop(0)
                         invoke_after += 0.5
                     case DrawEventType.CardCostChanged:
-                        while True:
-                            if (card := self.find_card_by_id(event.target_id)) is not None:
-                                pyglet.clock.schedule_once(card.set_cost, invoke_after, new_cost=event.current)
-                            if not (len(draw_events) > 0 and isinstance(draw_events[0], DrawEvent)
-                                    and draw_events[0].event_type == DrawEventType.CardCostChanged):
-                                break
-                            event = draw_events[0]
-                            draw_events.pop(0)
+                        for i in event, *self._pop_same_drawevents(draw_events, DrawEventType.CardCostChanged):
+                            if (card := self.find_card_by_id(i.target_id)) is not None:
+                                pyglet.clock.schedule_once(card.set_cost, invoke_after, new_cost=i.current)
                         invoke_after += 0.5
                     case DrawEventType.ItemUsed:
                         pass
@@ -192,19 +190,14 @@ class MainScene(Scene):
                         raise NotImplementedError
                     case DrawEventType.PlayerStatChanged:
                         changed_table: Dict[HUDValueType, Tuple[int, bool]] = {}
-                        while True:
-                            key = {
+                        key_table: Dict[PlayerStat, HUDValueType] = {
                                 PlayerStat.Action: HUDValueType.Action,
                                 PlayerStat.Attack: HUDValueType.Attack,
                                 PlayerStat.Health: HUDValueType.Health,
                                 PlayerStat.Money: HUDValueType.Money
-                            }[PlayerStat(event.target_id)]
-                            changed_table[key] = (event.current, True)
-                            if not (len(draw_events) > 0 and isinstance(draw_events[0], DrawEvent)
-                                    and draw_events[0].event_type == DrawEventType.PlayerStatChanged):
-                                break
-                            event = draw_events[0]
-                            draw_events.pop(0)
+                            }
+                        for i in event, *self._pop_same_drawevents(draw_events, DrawEventType.PlayerStatChanged):
+                            changed_table[key_table[PlayerStat(event.target_id)]] = (i.current, True)
                         pyglet.clock.schedule_once(self.hud.set_states, invoke_after, states=changed_table, duration=2.0)
                         invoke_after += 2.0
 
@@ -213,7 +206,8 @@ class MainScene(Scene):
                 raise NotImplementedError
             else:
                 # 카드 생성 이벤트.
-                raise NotImplementedError
+                while True:
+                    card = Card(event[0], self.card_layout, self.card_batch, self.card_group, self.card_thumnail_group, self.card_text_group)
         pyglet.clock.schedule_once(self.set_user_controllable, invoke_after, controllable=True)
 
     def find_card_by_id(self, id: int) -> Optional[Card]:

@@ -153,11 +153,11 @@ class ItemsLayout(ElementsLayoutBase):
             y: int = 0,
             height: int = 300,
             ) -> None:
-        """CardsLayout의 초기화 함수.
+        """ItemsLayout의 초기화 함수.
         params:
             `scene`: Scene - 이 객체가 존재하는 Scene.
-            `length`: int - 보유한 카드 수.
-            `space`: int - 카드의 기준점에서 인접 카드의 기준점까지의 거리.
+            `length`: int - 보유한 아이템 수.
+            `space`: int - 아이템의 기준점에서 인접 아이템의 기준점까지의 거리.
             `y`: int - 창 하단에서부터의 y좌표.
             `height`: int - 레이아웃의 세로 길이. 스크롤 시 커서 위치 검사에 사용."""
         super().__init__(scene, length)
@@ -170,8 +170,11 @@ class ItemsLayout(ElementsLayoutBase):
         화면비에 영향을 받지 않는 값."""
         return self.space * (self.length-1)
     
-    def get_position(self, index: int) -> Vec2:
-        return Vec2((self.scene.ref_w-self.get_width())/2 + index*self.space, self.y) * self.scene.scale_factor
+    def get_position(self, index: int, scaled: bool = True) -> Vec2:
+        result: Vec2 = Vec2((self.scene.ref_w-self.get_width())/2 + index*self.space, self.y) 
+        if scaled:
+            result *= self.scene.scale_factor
+        return result
     
     def get_rotation(self, index: int) -> float:
         return 0.0
