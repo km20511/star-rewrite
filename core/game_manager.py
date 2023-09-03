@@ -308,6 +308,11 @@ class GameManager:
         if self.__game_end or self.__game_state.player_remaining_action <= 0: return False
         card: Optional[Card] = self.__deck.get_card_by_id(id)
         if card is None or not self.can_buy_card(card): return False
+        self.__event_manager.push_draw_event(DrawEvent(
+            DrawEventType.CardPurchased,
+            card.id,
+            0, 0
+        ))
         self.__game_state.player_remaining_action -= 1
         self.__event_manager.push_draw_event(DrawEvent(
             DrawEventType.PlayerStatChanged,
@@ -362,11 +367,6 @@ class GameManager:
                     self.__game_state.player_money+card.modified_cost, self.__game_state.player_money
                 ))
         
-        self.__event_manager.push_draw_event(DrawEvent(
-            DrawEventType.CardPurchased,
-            card.id,
-            0, 0
-        ))
         self.__event_manager.on_card_purchased(card)
         self.__event_manager.invoke_events(recursive=True)
 
@@ -394,14 +394,14 @@ class GameManager:
         if item is None or not self.can_use_item(id): return False
         self.__game_state.player_remaining_action -= 1
         self.__event_manager.push_draw_event(DrawEvent(
-            DrawEventType.PlayerStatChanged,
-            PlayerStat.Action.value,
-            self.__game_state.player_remaining_action+1, self.__game_state.player_remaining_action
-        ))
-        self.__event_manager.push_draw_event(DrawEvent(
             DrawEventType.ItemUsed,
             item.id,
             0, 0
+        ))
+        self.__event_manager.push_draw_event(DrawEvent(
+            DrawEventType.PlayerStatChanged,
+            PlayerStat.Action.value,
+            self.__game_state.player_remaining_action+1, self.__game_state.player_remaining_action
         ))
         self.__event_manager.on_item_used(item)
         self.__event_manager.invoke_events(recursive=True)
@@ -428,15 +428,27 @@ class GameManager:
         self.__event_manager.invoke_events(recursive=True)
 
         self.__game_state.current_turn += 1
+        prev_action = self.__game_state.player_remaining_action
+        prev_attack = self.__game_state.player_attack
         self.__game_state.player_remaining_action = self.__game_state.player_action
         self.__game_state.player_attack = 0
-
-        self.__event_manager.on_turn_begin(self.__game_state.current_turn)
         self.__event_manager.push_draw_event(DrawEvent(
             DrawEventType.TurnBegin,
             0, 0,
             self.__game_state.current_turn
         ))
+        self.__event_manager.push_draw_event(DrawEvent(
+            DrawEventType.PlayerStatChanged,
+            PlayerStat.Action.value,
+            prev_action, self.__game_state.player_action
+        ))
+        self.__event_manager.push_draw_event(DrawEvent(
+            DrawEventType.PlayerStatChanged,
+            PlayerStat.Attack.value,
+            prev_attack, 0
+        ))
+
+        self.__event_manager.on_turn_begin(self.__game_state.current_turn)
         self.__event_manager.invoke_events(recursive=True)
 
     def win_game(self) -> None:

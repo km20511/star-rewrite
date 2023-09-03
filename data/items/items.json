@@ -12,7 +12,7 @@
         {
             "id": 3,
             "name": "아르바이트 수행",
-            "sprite_name": "unnamed.png",
+            "sprite_name": "item_parttime_job.png",
             "description": "사용 시: 3골드를 얻습니다.",
             "effects": [
                 {
@@ -25,7 +25,7 @@
         {
             "id": 8,
             "name": "입문자의 목검",
-            "sprite_name": "unnamed.png",
+            "sprite_name": "item_wooden_sword.png",
             "description": "사용 시: 이번 턴에만 공격력을 2 얻습니다.",
             "effects": [
                 {

@@ -4,6 +4,7 @@ import pyglet
 from pyglet.math import Vec2
 from pyglet.text import Label
 from pyglet.sprite import Sprite
+from pyglet.event import EventDispatcher
 from pyglet.shapes import BorderedRectangle
 from pyglet.graphics import Batch, Group
 
@@ -32,7 +33,7 @@ TOOLTIP_PADDING: Final[int] = 10
 TOOLTIP_OFFSET: Final[Vec2] = Vec2(0, 10)
 
 
-class InventoryUI:
+class InventoryUI(EventDispatcher):
     """화면 하단에 출력되는 인벤토리."""
     def __init__(
             self, 
@@ -51,6 +52,8 @@ class InventoryUI:
         self.group_tooltip_content: Group = Group(order=ui_group.order + 6, parent=self.group_tooltip)
         self.icon_size: int = icon_size
         self.pages: int = 0
+
+        self.user_purchasable: bool = True
 
         self.item_default_image = pyglet.resource.image(ITEM_DEFAULT_ICON)
         self.item_default_image.width = self.item_default_image.height = icon_size
@@ -161,10 +164,30 @@ class InventoryUI:
                 self._show_tooltip(index, self.items_table[item_index])
             else:
                 self._hide_tooltip()
-        
-        self.scene.window.push_handlers(on_mouse_motion)
 
-        # self.scene.window.push_handlers(on_mouse_motion=lambda x,y,dx,dy: print(self._calc_hovered_index(Vec2(x,y))))
+        def on_mouse_press(x: int, y: int, button, modifiers):
+            if button & pyglet.window.mouse.LEFT \
+                and (index := self._calc_hovered_index(Vec2(x, y))) >= 0 \
+                and (item_index := index + self.pages*self.layout.length) in self.items_table:
+                self.dispatch_event("on_item_clicked", self.items_table[item_index])
+
+        def on_key_press(symbol, modifiers):
+            # 마감이 급하므로 인벤토리 1페이지가 10칸이라 가정함.
+            # 숫자 키가 눌렸는지 확인.
+            if not (0 <= (num := symbol - pyglet.window.key._0) < 10) \
+                and not (0 <= (num := symbol - pyglet.window.key.NUM_0) < 10):
+                return
+            # 1이 첫 칸을, 0이 마지막 칸을 가리키므로 내부 인덱스로 변환.
+            index = (num-1) % 10 + self.pages*self.layout.length
+            if index in self.items_table:
+                self.dispatch_event("on_item_clicked", self.items_table[index])
+
+        
+        self.scene.window.push_handlers(on_mouse_motion, on_mouse_press, on_key_press)
+
+    def set_user_purchasable(self, purchasable: bool):
+        self.user_purchasable = purchasable
+        self.update_image()
 
     def update_layout(self) -> None:
         self.pagebtn_prev.position = self.layout.get_position(-1, scaled=False)
@@ -203,8 +226,12 @@ class InventoryUI:
                 img.anchor_x = img.anchor_y = self.icon_size // 2
                 self.icons[i].image = img
                 self.icons[i].visible = True
-                self.placeholders[i].opacity = 255
-                self.index_labels[i].opacity = 255
+                if self.user_purchasable:
+                    self.placeholders[i].opacity = 255
+                    self.index_labels[i].opacity = 255
+                else:
+                    self.placeholders[i].opacity = 32
+                    self.index_labels[i].opacity = 64
             else:
                 self.icons[i].visible = False
                 self.placeholders[i].opacity = 32
@@ -302,3 +329,6 @@ class InventoryUI:
             Vec2(*self.tooltip_description.position[:2])
             + Vec2(0, TOOLTIP_VERTICAL_SPACING*self.scene.scale_factor + self.tooltip_description.content_height)
         ), 0
+
+
+InventoryUI.register_event_type("on_item_clicked")

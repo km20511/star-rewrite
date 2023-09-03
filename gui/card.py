@@ -51,6 +51,7 @@ class Card:
             Vec2(1, 1) * layout.get_scale(index)
         )
         self.transition = Transition[Transform2D](self.transform, self.transform, 0.5)
+        self.alive: bool = True
 
         image_front = pyglet.resource.image(CARD_SPRITE[data.type][0])
         try:
@@ -96,13 +97,18 @@ class Card:
         self.layout.push_handlers(on_layout_modified=lambda : self.update_state())
         self.layout.scene.push_handlers(on_scene_updated=self._update_transition)
         self.update_state()
+
+    def __eq__(self, __value: object) -> bool:
+        return isinstance(__value, Card) and self.data.id == __value.data.id
     
     def _update_transition(self, dt: float):
-        if self.transition.active:
+        if self.transition.active and self.alive:
             self.transform = self.transition.update(time.time())
 
     def update_state(self):
         """현재 데이터를 기준으로 상태를 갱신."""
+        if not self.alive:
+            return
         self.transform = Transform2D(
             self.layout.get_position(self.index),
             self.layout.get_rotation(self.index),
@@ -112,7 +118,7 @@ class Card:
 
         if self.data.is_front_face:
             self.sprite_back.visible = False
-            self.sprite_front.visible = self.sprite_front.visible = True
+            self.sprite_front.visible = self.sprite_content.visible = True
             self.label_title.visible = self.label_description.visible = True
             self.label_cost.visible = self.data.type != CardType.Event
 
@@ -160,25 +166,29 @@ class Card:
 
     def move_to(self, new_index: int, duration: float = 0.5):
         """주어진 인덱스로 이동함."""
+        if not self.alive:
+            return
+        self.index = new_index
         if duration < 0.05:
             # 전이를 수행하지 않음.
-            self.index = new_index
             self.update_state()
             return
         self.transition.start_value = self.transform
         self.transition.destination_value = Transform2D(
             self.layout.get_position(new_index),
             self.layout.get_rotation(new_index),
-            self.layout.get_scale(new_index)
+            Vec2(1, 1) * self.layout.get_scale(new_index)
         )
         self.transition.start(time.time(), duration)
 
     def set_cost(self, new_cost: int):
         """표시되는 비용을 변경."""
+        if not self.alive:
+            return
         if self.data.type == CardType.Event: return
         if (delta := new_cost - self.data.base_cost) == 0:
             self.label_cost.color = Color.black().tuple_256()
-        elif delta > 0 ^ self.data.type == CardType.Item:
+        elif (delta > 0) ^ (self.data.type == CardType.Item):
             self.label_cost.color = Color.green().tuple_256()
         else:
             self.label_cost.color = Color.red().tuple_256()
@@ -187,4 +197,12 @@ class Card:
 
     def delete(self):
         """이 카드를 파괴함."""
-        raise NotImplementedError
+        self.alive = False
+        self.label_cost.delete()
+        self.label_title.delete()
+        self.label_description.delete()
+        self.sprite_back.delete()
+        self.sprite_content.delete()
+        self.sprite_front.delete()
+        self.layout.length -= 1
+        self.layout.trigger_scroll()

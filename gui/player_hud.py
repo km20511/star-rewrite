@@ -127,12 +127,15 @@ class PlayerHUD:
             self.labels[val_type].width = (self.ui_width - ICON_SIZE)*self.scene.scale_factor_y
             self.labels[val_type].font_size = STAT_FONT_SIZE*self.scene.scale_factor_y
             if self.change_labels[val_type].visible:
-                self.change_labels[val_type].font_size = CHANGES_FONT_SIZE*self.scene.scale_factor_y
-                self.change_labels[val_type].width = self.change_labels[val_type].content_width
-                self.change_labels[val_type].position = *((
-                    Vec2(*self.labels[val_type].position[:2])
-                    + Vec2(self.labels[val_type].width - self.change_labels[val_type].width, 0)
-                    + CHANGES_LABEL_OFFSET*self.scene.scale_factor_y)), 0
+                self._update_change_label_layout(val_type)
+
+    def _update_change_label_layout(self, val_type: HUDValueType):
+        self.change_labels[val_type].font_size = CHANGES_FONT_SIZE*self.scene.scale_factor_y
+        self.change_labels[val_type].width = self.change_labels[val_type].content_width
+        self.change_labels[val_type].position = *((
+            Vec2(*self.labels[val_type].position[:2])
+            + Vec2(self.labels[val_type].width - self.change_labels[val_type].width, 0)
+            + CHANGES_LABEL_OFFSET*self.scene.scale_factor_y)), 0
                 
     def _set_label_visible(self, label: Label, visible: bool):
         label.visible = visible
@@ -155,4 +158,8 @@ class PlayerHUD:
             self.change_labels[state_type].text = f"{delta:+d}"
             self.change_labels[state_type].color = (Color.green() if delta > 0 else Color.red()).tuple_256()
             self.change_labels[state_type].visible = True
-            pyglet.clock.schedule_once(self._set_label_visible, duration, label=self.change_labels[state_type], visible=False)
+            self._update_change_label_layout(state_type)
+            pyglet.clock.schedule_once(
+                lambda dt, label, visible: self._set_label_visible(label, visible), 
+                duration, label=self.change_labels[state_type], visible=False
+            )

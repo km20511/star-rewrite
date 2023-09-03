@@ -92,9 +92,7 @@ class CardsLayout(ElementsLayoutBase):
                 self.selected -= 1
             if self.selected != prev_selected:
                 self.input_scroll = 0.0
-                self.scroll_transition.start_value = self.scroll_value
-                self.scroll_transition.destination_value = float(self.space * self.selected)
-                self.scroll_transition.start(time.time())
+                self.trigger_scroll()
                 self.dispatch_event("on_selection_changed", self.selected)
 
         @self.scene.window.event
@@ -106,10 +104,9 @@ class CardsLayout(ElementsLayoutBase):
                 self.selected -= 1
             if self.selected != prev_selected:
                 self.input_scroll = 0.0
-                self.scroll_transition.start_value = self.scroll_value
-                self.scroll_transition.destination_value = float(self.space * self.selected)
-                self.scroll_transition.start(time.time())
+                self.trigger_scroll()
                 self.dispatch_event("on_selection_changed", self.selected)
+
 
         # @self.scene.window.event
         # def on_resize(w: int, h: int):
@@ -120,6 +117,10 @@ class CardsLayout(ElementsLayoutBase):
     #     """target과 가장 가까운 등차수열 항의 번호를 계산."""
     #     index: int = round((target - start) / space)
     #     return 0 if index < 0 else (length - 1 if index >= length else index)
+    def trigger_scroll(self):
+        self.scroll_transition.start_value = self.scroll_value
+        self.scroll_transition.destination_value = float(self.space * self.selected)
+        self.scroll_transition.start(time.time())
 
     def get_position(self, index: int) -> Vec2:
         return Vec2(self.space*index - self.scroll_value, self.y) * self.scene.scale_factor + Vec2(self.scene.window.width // 2, self.scene.window.height // 2)
