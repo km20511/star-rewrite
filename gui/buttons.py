@@ -99,7 +99,7 @@ class SolidButton(AnchoredWidget):
             self._pressed_state.transition
         )
 
-        self._scene.push_handlers(on_scene_updated = self.update_transition, on_scene_window_resized=lambda w,h: self.update_layout())
+        self._scene.push_handlers(on_scene_updated = self.update_transition, on_scene_window_resized=self._on_scene_window_resized)
         self._scene.window.push_handlers(
             self.on_mouse_press,
             self.on_mouse_release,
@@ -107,6 +107,9 @@ class SolidButton(AnchoredWidget):
         )
 
         self._pressed = False
+
+    def _on_scene_window_resized(self, w, h):
+        self.update_layout()
 
     def _update_position(self):
         self._shape.position = self._x, self._y
@@ -139,6 +142,15 @@ class SolidButton(AnchoredWidget):
         assert type(value) is bool, "This Widget's value must be True or False."
         self._pressed = value
         self.trigger_transition(self._current_state, self._pressed_state if value else self._depressed_state)
+
+    @property
+    def visible(self) -> bool:
+        return self._shape.visible
+
+    @visible.setter
+    def visible(self, value: bool):
+        self._shape.visible = value
+        self._label.visible = value
 
     # def update_groups(self, order):
     #     self._shape.group = pyglet.graphics.Group(order=order + 1, parent=self._user_group)
@@ -173,6 +185,17 @@ class SolidButton(AnchoredWidget):
             self.trigger_transition(self._current_state, self._disenabled_state)
         else:
             self.trigger_transition(self._current_state, self._depressed_state)
+
+    def delete(self):
+        """이 버튼 객체 삭제."""
+        self._shape.delete()
+        self._label.delete()
+        self._scene.remove_handlers(on_scene_updated = self.update_transition, on_scene_window_resized=self._on_scene_window_resized)
+        self._scene.window.remove_handlers(
+            self.on_mouse_press,
+            self.on_mouse_release,
+            self.on_mouse_motion
+        )
 
 
 SolidButton.register_event_type("on_press")

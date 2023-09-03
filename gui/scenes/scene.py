@@ -28,6 +28,11 @@ class Scene(pyglet.event.EventDispatcher):
         self.active = True
         self.window.push_handlers(on_resize=self.on_resize_window)
         pyglet.clock.schedule_interval(self.on_update_scene, 1/30)
+        # 로딩 직후 레이아웃 재계산.
+        pyglet.clock.schedule_once(
+            lambda dt, w, h: self.on_resize_window(w, h), 
+            delay=0.002, w=self.window.width, h=self.window.height
+        )
 
     def unload(self):
         """저장된 Window 객체에서 이 Scene을 삭제. 다른 Scene으로 전환하기 전 호출할 것."""

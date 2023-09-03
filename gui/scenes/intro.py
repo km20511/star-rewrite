@@ -1,192 +1,168 @@
 from enum import Enum, auto
 import json
 import os
-from typing import Callable, Final, List, Tuple
+from typing import Any, Callable, Final, List, Tuple
 
 import pyglet
+from pyglet.text import Label
+from gui.anchored_widget import AnchorPreset
 
 from gui.color import Color
+from gui.game_context import GameContext
 from gui.scenes.scene import Scene
 from gui.buttons import SolidButton, SolidButtonState
 
 
 TITLE_FONT: Final[str] = "Algerian"
+TITLE_FONT_SIZE: Final[int] = 65
+TITLE_OFFSET_Y: Final[int] = 100
 CONTENT_FONT: Final[str] = "Neo둥근모 Pro"
+CONTENT_FONT_SIZE: Final[int] = 20
 
 LEVEL_PATH: Final[str] = "data/levels"
 SAVES_PATH: Final[str] = "data/saves"
 
 class IntroScene(Scene):
-    """게임 실행 시 보여지는 타이틀 화면."""
+    """게임 실행 시 보이는 타이틀 화면."""
 
     match_w_h = 0.7
     ref_w: int = 1280
     ref_h: int = 720
-    on_load_file: Callable[[str], None] = lambda _, x: None
 
-    class UIState(Enum):
-        Title = auto()
-        Selecting = auto()
-    ui_state: UIState = UIState.Title
-
-    def load(self, on_load_file: Callable[[str], None]):
+    
+    def load(self):
+        """메뉴 선택 Scene을 불러옴."""
         super().load()
 
-        self.ui_state = IntroScene.UIState.Title
-        self.title_batch = pyglet.graphics.Batch()
-        self.selection_batch = pyglet.graphics.Batch()
-        self.on_load_file = on_load_file
+        self.batch = pyglet.graphics.Batch()
+        self.group = pyglet.graphics.Group(order=0)
 
-        self.title_text = pyglet.text.Label(
+        self.title_text = Label(
             "Star Rewrite",
-            font_name=TITLE_FONT,
-            font_size=45,
-            bold=True,
-            x=self.window.width // 2,
-            y=self.window.height // 2 + 100,
-            anchor_x="center",
-            anchor_y="center",
-            batch=self.title_batch
+            font_name=TITLE_FONT, font_size=TITLE_FONT_SIZE*self.scale_factor,
+            color=Color.white().tuple_256(),
+            x=self.window.width//2, y=self.window.height//2+TITLE_OFFSET_Y*self.scale_factor,
+            anchor_x="center", anchor_y="center", align="center",
+            batch=self.batch, group=self.group
         )
 
-        btn_depressed = SolidButtonState(
-            box_color=Color.black(),
-            border_color=Color.white(),
-            label_color=Color.white(),
-            transition=1.0
-        )
-        btn_pressed = SolidButtonState(
-            box_color=Color.white(),
-            border_color=Color.white(),
-            label_color=Color.black(),
-            transition=1.0
-        )
-        btn_hover = SolidButtonState(
-            box_color=Color.white(),
-            border_color=Color.white(),
-            label_color=Color.black(),
-            transition=1.0
-        )
-        self.group_btn = pyglet.graphics.Group(order=3)
-        self.btn_style = {
-            "width": 400,
-            "height": 80,
-            "border": 5,
-            "font_family": CONTENT_FONT,
-            "font_size": 20,
-            "pressed": btn_pressed,
-            "depressed": btn_depressed,
-            "hover": btn_hover,
-            "batch": self.title_batch,
-            "group": self.group_btn
-        }
-
-        button_y_1: int = -100
-        button_y_step: int = -100
-
-        self.title_btns: List[SolidButton] = [
-            SolidButton(
-                scene=self,
-                x=self.window.width // 2 - 200,
-                y=self.window.height // 2 + button_y_1 + button_y_step*ind,
-                text=text,
-                **self.btn_style
-            ) for ind, text in enumerate(("이어 하기", "새 게임 생성"))
-        ]
-        self.title_btns[0].push_handlers(on_press=lambda : self.select_menu(True))
-        self.title_btns[1].push_handlers(on_press=lambda : self.select_menu(False))
-
-        self.level_select_text = pyglet.text.Label(
-            "",
-            font_name=TITLE_FONT,
-            font_size=45,
-            bold=True,
-            x=self.window.width // 2,
-            y=self.window.height // 2 + 100,
-            anchor_x="center",
-            anchor_y="center",
-            batch=self.selection_batch
+        self._btn_args = dict(
+            scene=self, width=400, height=80,
+            border=4, font_family=CONTENT_FONT, font_size=CONTENT_FONT_SIZE,
+            pressed=SolidButtonState(
+                box_color=Color.white(), border_color=Color.white(),
+                label_color=Color.black(), transition=0.5
+            ),
+            depressed=SolidButtonState(
+                box_color=Color.black(), border_color=Color.white(),
+                label_color=Color.white(), transition=0.5
+            ),
+            hover=SolidButtonState(
+                box_color=Color.white(), border_color=Color.white(),
+                label_color=Color.black(), transition=0.5
+            ), scale_factor=self.scale_factor,
+            batch=self.batch, group=self.group
         )
 
+        self.continue_btn = SolidButton(
+            text="이어 하기", x=0, y=0, **self._btn_args,
+            anchor=AnchorPreset.MiddleCenter, pivot=AnchorPreset.MiddleCenter
+        )
+        self.newgame_btn = SolidButton(
+            text="새로 시작", x=0, y=-100, **self._btn_args,
+            anchor=AnchorPreset.MiddleCenter, pivot=AnchorPreset.MiddleCenter
+        )
 
-        @self.window.event
-        def on_draw():
-            self.window.clear()
-            if self.ui_state == IntroScene.UIState.Title:
-                self.title_batch.draw()
-            else:
-                self.selection_batch.draw()
+        self.continue_btn.on_press = lambda : self.show_selection(True)
+        self.newgame_btn.on_press = lambda : self.show_selection(False)
 
-    def select_menu(self, is_savefile: bool):
-        """is_savefile이 참이면 저장 파일을, 거짓이면 레벨을 선택하는 화면 구성."""
-        self.level_select_text.text = "Continue" if is_savefile else "New Game"
-        btn_texts_and_paths: List[Tuple[str, str]] = []
-        self._switch_state(IntroScene.UIState.Selecting)
-    
-        if is_savefile:
-            for filename in os.listdir(SAVES_PATH):
-                if not filename.endswith(".json"):
-                    continue
-                with open(os.path.join(SAVES_PATH, filename), encoding="utf-8") as f:
-                    tree = json.load(f)
-                    btn_texts_and_paths.append((
-                        " ".join((tree["level_name"], f"{tree['current_turn']}", tree["datetime"])),
-                        os.path.join(SAVES_PATH, filename)
-                    ))
-        else:
-            for filename in os.listdir(LEVEL_PATH):
-                if not filename.endswith(".json"):
-                    continue
-                with open(os.path.join(LEVEL_PATH, filename), encoding="utf-8") as f:
-                    tree = json.load(f)
-                    btn_texts_and_paths.append((
-                        tree["level_name"],
-                        os.path.join(LEVEL_PATH, filename)
-                    ))
-
-        button_y_1: int = -100
-        button_y_step: int = -100
         self.selection_btns: List[SolidButton] = []
-        for ind, (text, filename) in enumerate(btn_texts_and_paths):
-            btn = SolidButton(
-                scene=self,
-                x=self.window.width // 2 - 200,
-                y=self.window.height // 2 + button_y_1 + button_y_step*ind,
-                text=text,
-                **(self.btn_style | {"batch": self.selection_batch})
-            )
-            btn.push_handlers(on_press=(lambda file=filename: self.on_load_file(file)))
-            self.selection_btns.append(btn)
-        cancel_btn = SolidButton(
-            scene=self,
-            x=self.window.width // 2 - 200,
-            y=self.window.height // 2 + button_y_1 + button_y_step*len(btn_texts_and_paths),
-            text="돌아가기",
-            **(self.btn_style | {"batch": self.selection_batch})
-        )
-        cancel_btn.push_handlers(on_press=lambda : self._switch_state(IntroScene.UIState.Title))
-        self.selection_btns.append(cancel_btn)
 
-    def _switch_state(self, state: UIState):
-        self.ui_state = state
-        if state == IntroScene.UIState.Title:
-            self.title_btns[0].push_handlers(on_press=lambda : self.select_menu(True))
-            self.title_btns[1].push_handlers(on_press=lambda : self.select_menu(False))
-            for i in self.selection_btns:
-                i.pop_handlers()
+
+        self.window.push_handlers(on_draw=self._on_draw)
+        self.push_handlers(on_scene_window_resized=self._on_scene_window_resized)
+
+    def _on_draw(self):
+        self.window.clear()
+        self.batch.draw()
+
+    def _on_scene_window_resized(self, w, h):
+        self.title_text.font_size = TITLE_FONT_SIZE * self.scale_factor
+        self.title_text.x=self.window.width//2
+        self.title_text.y=self.window.height//2+TITLE_OFFSET_Y*self.scale_factor
+        for btn in self.selection_btns:
+            btn.update_layout()
+
+    def show_selection(self, is_savefile: bool):
+        """파일 선택 화면을 보임.
+        
+        is_savefile의 값에 따라 이전 플레이 기록이나 새 스테이지를 보여 줌."""
+        self.title_text.text = "Continue" if is_savefile else "New Game"
+        self.continue_btn.visible = self.continue_btn.enabled = False
+        self.newgame_btn.visible = self.newgame_btn.enabled = False
+
+        label_and_filepath: List[Tuple[str, str]] = []
+        if is_savefile:
+            for filepath in os.listdir(SAVES_PATH):
+                if not filepath.endswith(".json"): continue
+                with open(os.path.join(SAVES_PATH, filepath), encoding="utf-8") as f:
+                    tree = json.load(f)
+                    label_and_filepath.append((
+                        f"{tree['level_name']} ({tree['current_turn']}턴) - {tree['datetime']}",
+                        os.path.join(SAVES_PATH, filepath)
+                    ))
         else:
-            for i in self.title_btns:
-                i.pop_handlers()
-            
-    def on_resize_window(self, w: int, h: int) -> None:
-        super().on_resize_window(w, h)
+            for filepath in os.listdir(LEVEL_PATH):
+                if not filepath.endswith(".json"): continue
+                with open(os.path.join(LEVEL_PATH, filepath), encoding="utf-8") as f:
+                    tree = json.load(f)
+                    label_and_filepath.append((
+                        tree["level_name"],
+                        os.path.join(LEVEL_PATH, filepath)
+                    ))
 
-        self.title_text.font_size = 45 * self.scale_factor
-        self.title_text.x = self.window.width//2
-        self.title_text.y = self.window.height//2 + 100*self.scale_factor
+        for ind, (text, filepath) in enumerate(label_and_filepath+[("돌아가기", "")]):
+            if ind >= len(self.selection_btns):
+                self.selection_btns.append(SolidButton(
+                    text=text, x=0, y=-100*ind, **self._btn_args
+                ))
+                self.selection_btns[ind].enabled = False
+            if ind >= len(label_and_filepath):
+                self.selection_btns[ind].on_press = self.return_to_title
+            else:
+                self.selection_btns[ind].on_press = lambda filepath=filepath: \
+                    self.load_game(filepath)
+            self.selection_btns[ind]._label.text = text
+            self.selection_btns[ind].update_layout()
+
+        pyglet.clock.schedule_once(self._show_selection_btn, delay=0.02)
+
+    def return_to_title(self):
+        for btn in self.selection_btns:
+            btn.visible = btn.enabled = False
+        self.title_text.text = "Star Rewrite"
+        # 이벤트를 활성과 동시에 받는 것 방지.
+        pyglet.clock.schedule_once(self._show_title_btn, delay=0.02)
+
+    def _show_title_btn(self, dt):
+        self.continue_btn.visible = self.continue_btn.enabled = True
+        self.newgame_btn.visible = self.newgame_btn.enabled = True
+
+    def _show_selection_btn(self, dt):
+        for i in self.selection_btns:
+            i.visible = i.enabled = True
     
+    def load_game(self, filepath):
+        self.context.file_path = filepath
+        self.context.load_scene("main")
+
     def unload(self):
-        self.window.on_draw = lambda : None
-        del self.title_text
-        del self.title_btns
-        del self.selection_btns
+        """Scene의 모든 객체 삭제."""
+        super().unload()
+        self.title_text.delete()
+        for btn in self.selection_btns:
+            btn.delete()
+        self.newgame_btn.delete()
+        self.continue_btn.delete()
+        self.window.remove_handlers(on_draw=self._on_draw)
+        self.remove_handlers(on_scene_window_resized=self._on_scene_window_resized)

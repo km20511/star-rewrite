@@ -32,9 +32,10 @@ def main() -> None:
     scenes["intro"] = IntroScene(app_window, game_context)
     scenes["main"] = MainScene(app_window, game_context)
 
-    # intro_scene.load(lambda path: (intro_scene.unload(), main_scene.load(path)))
-    game_context.file_path = "data/levels/tutorial_0.json"
-    load_scene("main")
+    scenes["intro"].load()
+    current_scene = scenes["intro"]
+    # game_context.file_path = "data/levels/tutorial_0.json"
+    # load_scene("main")
     
     pyglet.app.run()
 
