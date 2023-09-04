@@ -46,6 +46,14 @@ class AnchoredWidget(WidgetBase):
         self._width, self._height = width * scale_factor, height * scale_factor
         super().__init__(*self.world_coord(x, y), width, height)
 
+    def set_base_position(self, base_pos: Vec2):
+        self.base_pos = base_pos
+        self.update_layout()
+
+    def set_base_size(self, base_width: int, base_height: int):
+        self.base_width, self.base_height = base_width, base_height
+        self.update_layout()
+
     def update_layout(self, scale_factor: float = -1.0):
         if scale_factor > 0: self.scale_factor = scale_factor
         self._width, self._height = self.base_width * scale_factor, self.base_height * scale_factor
