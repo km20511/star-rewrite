@@ -137,7 +137,7 @@ class Card:
                 self.label_cost.font_size = 15 * self.transform.scale.x
                 self.label_cost.color = (
                     Color.black() if self.data.base_cost == self.data.current_cost else (
-                        Color.green() if (self.data.type == CardType.Enemy ^ self.data.current_cost > self.data.base_cost)
+                        Color.green() if ((self.data.type == CardType.Enemy) ^ (self.data.current_cost > self.data.base_cost))
                         else Color.red()
                     )
                 ).tuple_256()

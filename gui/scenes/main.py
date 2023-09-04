@@ -215,6 +215,7 @@ class MainScene(Scene):
                     case DrawEventType.CardCostChanged:
                         for i in event, *self._pop_same_drawevents(draw_events, DrawEventType.CardCostChanged):
                             if (card := self.find_card_by_id(i.target_id)) is not None:
+                                card.data.current_cost = i.current
                                 pyglet.clock.schedule_once(
                                     func=lambda dt, new_cost, card=card: card.set_cost(new_cost), 
                                     delay=invoke_after, new_cost=i.current
