@@ -34,7 +34,7 @@
             "id": 102,
             "name": "중형 슬라임",
             "type": "Enemy",
-            "cost": 3,
+            "cost": 5,
             "sprite_name": "slime_middle.png",
             "description": "처치 보상: 3골드",
             "effects": [
@@ -53,7 +53,7 @@
             "type": "Enemy",
             "cost": 7,
             "sprite_name": "slime_large.png",
-            "description": "[우두머리]\n레벨 디자이너의 귀차니즘이 느껴집니다..",
+            "description": "[우두머리]\n레벨 디자이너의 귀차니즘이 느껴집니다..\n네, 바로 접니다.",
             "effects": [
                 {
                     "base_id": "REWARD_MONEY",
@@ -62,6 +62,19 @@
                 {
                     "base_id": "WIN_ON_PURCHASED"
                 },
+                {
+                    "base_id": "DESTROY_ON_PURCHASED"
+                }
+            ]
+        },
+        {
+            "id": 107,
+            "name": "급조된 골렘",
+            "type": "Enemy",
+            "cost": 6,
+            "sprite_name": "unnamed.png",
+            "description": "마법으로 만들어진, 살아 있는 장벽입니다.",
+            "effects": [
                 {
                     "base_id": "DESTROY_ON_PURCHASED"
                 }
@@ -137,11 +150,11 @@
             "type": "Item",
             "cost": 3,
             "sprite_name": "tiny_well.png",
-            "description": "구매 시: 체력을 6 얻습니다.",
+            "description": "구매 시: 체력을 4 얻습니다.",
             "effects": [
                 {
                     "base_id": "REWARD_HEALTH",
-                    "args": {"amount": "6"}
+                    "args": {"amount": "4"}
                 },
                 {
                     "base_id": "DESTROY_ON_PURCHASED"
@@ -193,7 +206,7 @@
             "name": "친절한 할아버지",
             "type": "Event",
             "cost": 0,
-            "sprite_name": "unnamed.png",
+            "sprite_name": "kind_old_man.png",
             "description": "『바깥은 혼자 돌아다니기 위험하단다.\n이 목검을 가져가렴.』",
             "effects": [
                 {

@@ -134,7 +134,7 @@ class MainScene(Scene):
 
     def _check_purchasable(self, index: int) -> bool:
         """카드가 구매 가능한지 확인."""
-        if not (0 <= index < len(self.cards) or self.user_controllable):
+        if not (0 <= index < min(len(self.cards), 3) or self.user_controllable):
             return False
         card = self.cards[index].data
         if not card.is_front_face or self.game_state.player_remaining_action <= 0:

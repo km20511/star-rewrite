@@ -299,11 +299,13 @@ class GameManager:
             if self.can_buy_card(card):
                 lose = False
                 break
-        if lose:
-            for item in self.__inventory.get_items():
-                if self.can_use_item(item):
-                    lose = False
-                    break
+        # if lose:
+            # for item in self.__inventory.get_items():
+            #     if self.can_use_item(item):
+            #         lose = False
+            #         break
+        if len(self.inventory.get_items()) > 0:
+            lose = False
         if lose:
             self.lose_game(due_to_health=False)
             return
