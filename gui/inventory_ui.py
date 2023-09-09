@@ -330,5 +330,19 @@ class InventoryUI(EventDispatcher):
             + Vec2(0, TOOLTIP_VERTICAL_SPACING*self.scene.scale_factor + self.tooltip_description.content_height)
         ), 0
 
-
+    def delete(self):
+        for i in self.placeholders:
+            i.delete()
+        for i in self.index_labels:
+            i.delete()
+        for i in self.icons:
+            i.delete()
+        self.pagebtn_prev.delete()
+        self.pagebtn_next.delete()
+        self.pagelabel.delete()
+        self.tooltip_bg.delete()
+        self.tooltip_title.delete()
+        self.tooltip_description.delete()
+        self.tooltip_additional_description.delete()
+        
 InventoryUI.register_event_type("on_item_clicked")

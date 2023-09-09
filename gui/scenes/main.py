@@ -4,16 +4,17 @@ import pyglet
 from pyglet.math import Vec2
 
 from core import GameManager
-from core.enums import CardType, DrawEventType, PlayerStat
 from core.obj_data_formats import DrawEvent, ItemDrawData
-from gui.anchored_widget import AnchorPreset
-from gui.buttons import SolidButton, SolidButtonState
+from core.enums import CardType, DrawEventType, PlayerStat
 from gui.card import Card
 from gui.color import Color
-from gui.elements_layout import CardsLayout, ItemsLayout
-from gui.inventory_ui import InventoryUI
-from gui.player_hud import HUDValueType, PlayerHUD
 from gui.scenes import Scene
+from gui.inventory_ui import InventoryUI
+from gui.popup_window import PopupWindow
+from gui.anchored_widget import AnchorPreset
+from gui.player_hud import HUDValueType, PlayerHUD
+from gui.buttons import SolidButton, SolidButtonState
+from gui.elements_layout import CardsLayout, ItemsLayout
 
 CONTENTS_FONT: Final[str] = "Neo둥근모 Pro"
 
@@ -51,7 +52,7 @@ class MainScene(Scene):
             self.bg_sprite.draw()
             self.card_batch.draw()
             self.ui_batch.draw()
-            self.frame_display.draw()
+            # self.frame_display.draw()
 
     def setup_scene(self):
         """GameDrawState를 이용해 게임 상태 초기화."""
@@ -114,11 +115,28 @@ class MainScene(Scene):
             icon_size=50)
 
         self.inventory.push_handlers(on_item_clicked=lambda item_data: self._use_item(item_data.id))
+        for data in self.game_state.inventory:
+            self.inventory.push_item(data)
         # self.inventory.push_item(ItemDrawData(1234, "입문자의 목검", "item_wooden_sword.png", "사용 시: 이번 턴에만 공격력을 2 얻습니다."))
         # self.inventory.push_item(ItemDrawData(2382, "아르바이트 수행", "item_parttime_job.png", "사용 시: 3골드를 얻습니다."))
 
         self.card_layout.push_handlers(on_selection_changed=lambda index: self.buy_button.set_enabled(self._check_purchasable(index)))
         self.buy_button.set_enabled(self._check_purchasable(0))
+
+        self.popup = PopupWindow(
+            self,
+            border=3,
+            box_color=Color.black(), border_color=Color.white(),
+            button_bg_color=Color.black(), button_content_color=Color.white(),
+            text_color=Color.white(),
+            batch=self.ui_batch, group=self.ui_group
+        )
+
+        self.popup.show_popup(
+            title="Popup Test",
+            content="Popup 테스트 화면입니다.\n버튼을 눌러 닫아주세요.",
+            submit_msg="닫기", on_submit=lambda : None
+        )
 
     def _check_purchasable(self, index: int) -> bool:
         """카드가 구매 가능한지 확인."""
@@ -231,9 +249,19 @@ class MainScene(Scene):
                         )
                         invoke_after += 0.1
                     case DrawEventType.PlayerWon:
-                        raise NotImplementedError
+                        self.popup.show_popup(
+                            title="승리!", content=f"우두머리를 처치했습니다!\n소요 턴: {self.game_state.current_turn}",
+                            submit_msg="마치기", on_submit=self.end_game
+                        )
                     case DrawEventType.PlayerLost:
-                        raise NotImplementedError
+                        print(event.target_id)
+                        self.popup.show_popup(
+                            title="패배!", 
+                            content=("지금의 당신이 맞서기엔 적이 너무 강했습니다." 
+                                if event.target_id == 0 else "모든 미래를 찾아보아도 대책을 찾지 못했습니다.") \
+                                + f"\n소요 턴: {self.game_state.current_turn}",
+                            submit_msg="마치기", on_submit=self.end_game
+                        )
                     case DrawEventType.PlayerStatChanged:
                         changed_table: Dict[HUDValueType, Tuple[int, bool]] = {}
                         key_table: Dict[PlayerStat, HUDValueType] = {
@@ -271,10 +299,11 @@ class MainScene(Scene):
                         break
                     event = draw_events[0]
                     draw_events.pop(0)
-        pyglet.clock.schedule_once(
-            func=lambda dt, controllable: self.set_user_controllable(controllable), 
-            delay=invoke_after, controllable=True
-        )
+        if not self.game.game_end:
+            pyglet.clock.schedule_once(
+                func=lambda dt, controllable: self.set_user_controllable(controllable), 
+                delay=invoke_after, controllable=True
+            )
 
     def find_card_by_id(self, id: int) -> Optional[Card]:
         """주어진 id를 가진 Card를 탐색."""
@@ -291,3 +320,7 @@ class MainScene(Scene):
             self.buy_button.set_enabled(self._check_purchasable(self.card_layout.selected))
         else:
             self.buy_button.set_enabled(False)
+
+    def end_game(self):
+        """게임 종료 후 플레이어가 마침 버튼을 누른 경우 호출."""
+        self.window.close()

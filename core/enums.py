@@ -114,7 +114,8 @@ class DrawEventType(Enum):
     """플레이어가 승리함.
     TODO: 승리/패배 유형 전달."""
     PlayerLost = auto()
-    """플레이어가 패배함."""
+    """플레이어가 패배함.
+    target: 0 - 체력 고갈에 의한 패배. 1 - 행동 불능에 의한 패배."""
     PlayerStatChanged = auto()
     """플레이어 상태가 변화함.
     target: 해당 상태의 PlayerType(int).

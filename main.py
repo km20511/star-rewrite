@@ -27,15 +27,12 @@ def main() -> None:
         current_scene.load()
 
     game_context = GameContext(on_change_scene=load_scene)
-    # app_window.set_fullscreen(True)
 
     scenes["intro"] = IntroScene(app_window, game_context)
     scenes["main"] = MainScene(app_window, game_context)
 
     scenes["intro"].load()
     current_scene = scenes["intro"]
-    # game_context.file_path = "data/levels/tutorial_0.json"
-    # load_scene("main")
     
     pyglet.app.run()
 

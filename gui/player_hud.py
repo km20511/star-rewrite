@@ -31,7 +31,7 @@ PLACEHOLDER: Final[str] = "ui_placeholder.png"
 STAT_FONT: Final[str] = "Neo둥근모 Pro"
 
 STAT_FONT_SIZE: Final[int] = 22
-CHANGES_FONT_SIZE: Final[int] = 18
+CHANGES_FONT_SIZE: Final[int] = 20
 ICON_SIZE: Final[int] = 30
 ICON_OFFSET: Final[Vec2] = Vec2(20, 1)
 LABEL_OFFSET: Final[Vec2] = Vec2(15, 0)
@@ -104,6 +104,7 @@ class PlayerHUD:
             self.change_labels[val_type] = Label(
                 text="+1",
                 font_name=STAT_FONT, color=Color.green().tuple_256(), font_size=CHANGES_FONT_SIZE,
+                bold=True,
                 anchor_x="left", anchor_y="bottom", align="right",
                 batch=batch, group=self.group_content
             )
@@ -163,3 +164,9 @@ class PlayerHUD:
                 lambda dt, label, visible: self._set_label_visible(label, visible), 
                 duration, label=self.change_labels[state_type], visible=False
             )
+
+    def delete(self):
+        for i in *self.labels.values(), *self.change_labels.values():
+            i.delete()
+        for i in *self.placeholder_sprites, *self.icon_sprites.values():
+            i.delete()

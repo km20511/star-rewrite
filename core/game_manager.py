@@ -105,6 +105,10 @@ class GameManager:
     def event_manager(self) -> EventManager:
         """이 객체가 사용 중인 EventManager."""
         return self.__event_manager
+    
+    @property
+    def game_end(self) -> bool:
+        return self.__game_end
 
     @staticmethod
     def create_from_file(path: str) -> "GameManager":
@@ -273,7 +277,8 @@ class GameManager:
         self.__event_manager.on_calculate_card_cost(True)
         self.__deck.apply_cost_modifier()
         if self.__game_state.player_health <= 0:
-            self.lose_game()
+            self.lose_game(due_to_health=True)
+            return
         lose = True
         for card in self.__deck.get_cards():
             if self.can_buy_card(card):
@@ -285,7 +290,7 @@ class GameManager:
                     lose = False
                     break
         if lose:
-            self.lose_game()
+            self.lose_game(due_to_health=False)
 
     def add_item(self, item_data: ItemData, amount: int = 1, repeat: int =1):
         """인벤토리에 아이템을 amount개만큼 추가."""
@@ -459,11 +464,12 @@ class GameManager:
         ))
         self.__game_end = True
 
-    def lose_game(self) -> None:
-        """게임을 패배한 것으로 처리."""
+    def lose_game(self, due_to_health: bool) -> None:
+        """게임을 패배한 것으로 처리.
+        due_to_health: 참 - 체력에 의한 패배, 거짓 - 행동 불능에 의한 패배."""
         self.__event_manager.push_draw_event(DrawEvent(
             DrawEventType.PlayerLost,
-            0, 0, 0
+            (0 if due_to_health else 1), 0, 0
         ))
         self.__game_end = True
     
