@@ -18,6 +18,8 @@ TITLE_FONT_SIZE: Final[int] = 65
 TITLE_OFFSET_Y: Final[int] = 100
 CONTENT_FONT: Final[str] = "Neo둥근모 Pro"
 CONTENT_FONT_SIZE: Final[int] = 20
+BUTTON_MIN_WIDTH: Final[int] = 400
+BUTTON_TEXT_PIVOT: Final[int] = 20
 
 LEVEL_PATH: Final[str] = "data/levels"
 SAVES_PATH: Final[str] = "data/saves"
@@ -127,13 +129,18 @@ class IntroScene(Scene):
                     text=text, x=0, y=-100*ind, **self._btn_args
                 ))
                 self.selection_btns[ind].enabled = False
+            btn = self.selection_btns[ind]
             if ind >= len(label_and_filepath):
-                self.selection_btns[ind].on_press = self.return_to_title
+                btn.on_press = self.return_to_title
             else:
-                self.selection_btns[ind].on_press = lambda filepath=filepath: \
+                btn.on_press = lambda filepath=filepath: \
                     self.load_game(filepath)
-            self.selection_btns[ind]._label.text = text
-            self.selection_btns[ind].update_layout()
+            btn._label.text = text
+            btn.set_base_size(
+                base_width=max((btn._label.content_width / self.scale_factor) + BUTTON_TEXT_PIVOT*2, BUTTON_MIN_WIDTH),
+                base_height=btn.base_height
+            )
+            btn.update_layout()
 
         pyglet.clock.schedule_once(self._show_selection_btn, delay=0.02)
 

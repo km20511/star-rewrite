@@ -51,18 +51,16 @@
             "id": 103,
             "name": "대형 슬라임",
             "type": "Enemy",
-            "cost": 4,
+            "cost": 7,
             "sprite_name": "slime_large.png",
-            "description": "처치 보상: 3골드\n처치 시 소형 슬라임을 둘 소환합니다.",
+            "description": "[우두머리]\n레벨 디자이너의 귀차니즘이 느껴집니다..",
             "effects": [
                 {
                     "base_id": "REWARD_MONEY",
                     "args": {"amount": "3"}
                 },
                 {
-                    "effect": "insert_card(id = 101, amount = 2)",
-                    "target": "Executer",
-                    "event_type": "OnPurchased"
+                    "base_id": "WIN_ON_PURCHASED"
                 },
                 {
                     "base_id": "DESTROY_ON_PURCHASED"

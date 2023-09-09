@@ -4,6 +4,7 @@
 
 import os
 import json
+import uuid
 from datetime import datetime
 from typing import Any, Dict, Final, List, Optional, Tuple
 from dataclasses import dataclass
@@ -24,7 +25,7 @@ from core.obj_data_formats import (
 
 # 상수
 LEVEL_PATH: Final[str] = "data/levels"
-SAVEFILE_PATH: Final[str] = "data/savefiles"
+SAVEFILE_PATH: Final[str] = "data/saves"
 
 
 @dataclass
@@ -46,8 +47,10 @@ class GameManager:
     게임의 전체적인 진행을 담당.
     """
 
-    def __init__(self, game_state: GameState, level_name: str, card_saves: List[CardSaveData], item_saves: List[ItemSaveData]) -> None:
+    def __init__(self, game_id: str, game_state: GameState, level_name: str, card_saves: List[CardSaveData], item_saves: List[ItemSaveData]) -> None:
         """GameManager의 초기화 메소드. 외부에서 직접 호출하는 것은 권장하지 않음."""
+        self.__game_id: str = game_id
+
         self.__game_state: GameState = game_state
         self.__level_name: str = level_name
         self.__event_manager: EventManager = EventManager(self)
@@ -127,12 +130,14 @@ class GameManager:
         if "player_index" in tree: state.player_index = tree["player_index"]
         if "player_attack" in tree: state.player_attack = tree["player_attack"]
         if "player_action" in tree: state.player_action = tree["player_action"]
-        if "player_remaining_action" in tree:
-            state.player_remaining_action = tree["player_action"]
+
+        state.player_remaining_action = tree["player_remaining_action" if "player_remaining_action" in tree else "player_action"]
 
         card_saves = [CardSaveData(**save_obj) for save_obj in tree["deck"]]
         item_saves = [ItemSaveData(**save_obj) for save_obj in tree["inventory"]]
-        return GameManager(state, tree["level_name"], card_saves, item_saves)
+
+        game_id: str = tree["game_id"] if "game_id" in tree else uuid.uuid4().hex[:16]
+        return GameManager(game_id, state, tree["level_name"], card_saves, item_saves)
 
     def start_game(self):
         """초기화 메소드 직후에 호출되어 게임 시작 시의 로직을 수행."""
@@ -149,19 +154,24 @@ class GameManager:
             ))
             self.__event_manager.invoke_events(recursive=True)
 
-    def save(self, path: str) -> None:
+    def save(self, path: str, filename: str = "") -> None:
         """현재 게임 상태를 주어진 경로의 폴더에 저장."""
         # TODO: 저장 파일 포맷 완성
         self.__game_state.player_index = self.__deck.player_index
         tree: dict = {
+            "game_id": self.__game_id,
             "level_name": self.__level_name,
             "datetime": datetime.now().strftime('%Y_%m_%d_%H_%M_%S'),
             "deck": [card.to_save_data().__dict__ for card in self.__deck.get_cards()],
             "inventory": [item.to_save_data().__dict__ for item in self.__inventory.get_items()],
             **self.__game_state.__dict__ # 나중에 고치시오
         }
+
+        if filename == "":
+            filename = f"{self.__level_name}_{datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}.json"
+
         with open(
-            os.path.join(path, f"{self.__level_name}_{datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}.json"), 
+            os.path.join(path, filename), 
             "w", encoding="utf-8") as f:
             json.dump(tree, f)
 
@@ -296,6 +306,8 @@ class GameManager:
                     break
         if lose:
             self.lose_game(due_to_health=False)
+            return
+        self.save(SAVEFILE_PATH, f"autosave_{self.__game_id}.json")
 
     def add_item(self, item_data: ItemData, amount: int = 1, repeat: int =1):
         """인벤토리에 아이템을 amount개만큼 추가."""
