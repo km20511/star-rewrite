@@ -105,7 +105,7 @@ class GameManager:
     def event_manager(self) -> EventManager:
         """이 객체가 사용 중인 EventManager."""
         return self.__event_manager
-    
+
     @property
     def game_end(self) -> bool:
         return self.__game_end
@@ -215,7 +215,9 @@ class GameManager:
             "get_item_data": cdm.get_item_data,
             "player_index": self.__deck.player_index, 
             "abs": abs,
-            "len": len
+            "len": len,
+            "min": min,
+            "max": max
         }
 
     def get_writable_static_table(self, repeat = 1) -> Dict[str, Any]:
@@ -278,6 +280,9 @@ class GameManager:
         self.__deck.apply_cost_modifier()
         if self.__game_state.player_health <= 0:
             self.lose_game(due_to_health=True)
+            return
+        if self.__game_end:
+            # 체력이 고갈되지 않았으며 게임이 끝났다면 승리한 것.
             return
         lose = True
         for card in self.__deck.get_cards():

@@ -92,6 +92,31 @@
             ]
         },
         {
+            "id": 118,
+            "name": "과장된 존재",
+            "type": "Enemy",
+            "cost": 20,
+            "sprite_name": "the_exaggerated.png",
+            "description": "[우두머리]\n멀리서 보니 두려울 정도로 거대합니다.",
+            "effects": [
+                {
+                    "base_id": "REWARD_MONEY",
+                    "args": {"amount": "3"}
+                },
+                {
+                    "effect": "set_cost(amount=lambda card: min(20, abs(card.current_index - player_index) * 4))",
+                    "target": "Executer",
+                    "event_type": "OnCalculateCardCost"
+                },
+                {
+                    "base_id": "WIN_ON_PURCHASED"
+                },
+                {
+                    "base_id": "DESTROY_ON_PURCHASED"
+                }
+            ]
+        },
+        {
             "id": 203,
             "name": "구인 포스터",
             "type": "Item",
@@ -131,18 +156,33 @@
             "type": "Item",
             "cost": 7,
             "sprite_name": "statue_of_wish.png",
-            "description": "구매 시: 공개된 적 카드 하나당 공격력을 3 얻고\n체력이 3 이하라면 체력을 6 얻습니다.",
+            "description": "구매 시: '전사의 석상'을 얻습니다.",
             "effects": [
                 {
-                    "effect": "modify_player_stat(PLAYER_ATTACK, amount = 3)",
-                    "target": "Deck",
-                    "query": "executer == target and this.card_data.type == CardType.Enemy and this.is_front_face",
-                    "event_type": "OnPurchased"
+                    "base_id": "REWARD_ITEM",
+                    "args": {"item_id": "15", "amount": "1"}
                 },
                 {
-                    "effect": "modify_player_stat(PLAYER_HEALTH, amount = 6)",
-                    "target": "Executer",
-                    "query": "executer == target and get_player_stat(PLAYER_HEALTH) <= 3",
+                    "base_id": "DESTROY_ON_PURCHASED"
+                }
+            ]
+        },
+        {
+            "id": 230,
+            "name": "예언: 유성우",
+            "type": "Item",
+            "cost": 10,
+            "sprite_name": "unnamed.png",
+            "description": "구매 시: 공개된 적 중 가장 먼 적에게 현재 공격력만큼 피해를 줍니다.",
+            "effects": [
+                {
+                    "effect": "modify_cost(lambda card: -get_player_stat(PLAYER_ATTACK))",
+                    "target": "Deck",
+                    "query": "executer == target and this.card_data.type == CardType.Enemy and this.is_front_face",
+                    "order_by": {
+                        "method": "-abs(this.current_index - player_index)",
+                        "crop": "1"
+                    },
                     "event_type": "OnPurchased"
                 },
                 {
@@ -168,6 +208,42 @@
             ]
         },
         {
+            "id": 310,
+            "name": "조성술 기초",
+            "type": "Event",
+            "cost": 0,
+            "sprite_name": "unnamed.png",
+            "description": "당신이 발견한 석판에는 조성술을 통해 재물운을 늘리는 방법이 써있습니다.",
+            "effects": [
+                {
+                    "base_id": "REWARD_ITEM",
+                    "args": {"item_id": "13", "amount": "1"}
+                },
+                {
+                    "base_id": "DESTROY_ON_PURCHASED"
+                }
+            ]
+        },
+        {
+            "id": 315,
+            "name": "우두머리의 존재감",
+            "type": "Event",
+            "cost": 0,
+            "sprite_name": "unnamed.png",
+            "description": "추락한 별의 강력한 기운이 멀리서도 느껴집니다.\n구매 시:우두머리를 공개합니다.",
+            "effects": [
+                {
+                    "effect": "show_cards(show=lambda _:True)",
+                    "target": "Deck",
+                    "query": "executer == target and this.card_data.id in (117, 118)",
+                    "event_type": "OnPurchased"
+                },
+                {
+                    "base_id": "DESTROY_ON_PURCHASED"
+                }
+            ]
+        },
+        {
             "id": 323,
             "name": "광역 지뢰",
             "type": "Event",
@@ -183,7 +259,7 @@
                 {
                     "effect": "modify_value(value_type = ValueType.Cost, amount = -3)",
                     "target": "Deck",
-                    "query": "this.type == CardType.Enemy && this.is_front",
+                    "query": "this.type == CardType.Enemy and this.is_front",
                     "order_by": {
                         "method": "distance(this, executer)",
                         "crop": "2"

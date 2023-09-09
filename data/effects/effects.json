@@ -92,6 +92,13 @@
             "args": {"item_id": "0", "amount": "1"}
         },
         {
+            "id": "WIN_ON_PURCHASED",
+            "event_type": "OnPurchased",
+            "effect": "win_game()",
+            "target": "Executer",
+            "query": "this == target"
+        },
+        {
             "id": "DESTROY_ON_PURCHASED",
             "event_type": "OnPurchased",
             "effect": "destroy_cards()",
@@ -102,7 +109,7 @@
             "id": "DESTROY_ON_USED",
             "event_type": "OnUsed",
             "effect": "destroy_items()",
-            "target": "Inventory",
+            "target": "Executer",
             "query": "this == target"
         }
     ]

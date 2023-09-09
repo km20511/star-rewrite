@@ -57,7 +57,7 @@ class EffectHolder:
     def __eq__(self, __value: object) -> bool:
         if not isinstance(__value, EffectHolder):
             return False
-        assert type(self) == type(__value), "용서받지 못할 일이 일어났어!" 
+        #assert type(self) == type(__value), "용서받지 못할 일이 일어났어!" 
         return type(self) == type(__value) and self.id == __value.id
 
     def add_effect(self, effect: Effect):

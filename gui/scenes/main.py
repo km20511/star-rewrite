@@ -132,17 +132,11 @@ class MainScene(Scene):
             batch=self.ui_batch, group=self.ui_group
         )
 
-        self.popup.show_popup(
-            title="Popup Test",
-            content="Popup 테스트 화면입니다.\n버튼을 눌러 닫아주세요.",
-            submit_msg="닫기", on_submit=lambda : None
-        )
-
     def _check_purchasable(self, index: int) -> bool:
         """카드가 구매 가능한지 확인."""
-        if not (0 <= index < len(self.game_state.deck) or self.user_controllable):
+        if not (0 <= index < len(self.cards) or self.user_controllable):
             return False
-        card = self.game_state.deck[index]
+        card = self.cards[index].data
         if not card.is_front_face or self.game_state.player_remaining_action <= 0:
             return False
         return (self.game_state.player_health + self.game_state.player_attack >= card.current_cost
@@ -191,6 +185,7 @@ class MainScene(Scene):
             if isinstance(event, DrawEvent):
                 match (event.event_type):
                     case DrawEventType.TurnBegin:
+                        self.game_state.current_turn = event.current
                         pyglet.clock.schedule_once(
                             func=lambda dt, states, duration: self.hud.set_states(states, duration), 
                             delay=invoke_after, states={HUDValueType.Turn: (event.current, True)}, duration=2.0
@@ -272,6 +267,16 @@ class MainScene(Scene):
                             }
                         for i in event, *self._pop_same_drawevents(draw_events, DrawEventType.PlayerStatChanged):
                             changed_table[key_table[PlayerStat(i.target_id)]] = (i.current, True)
+                        for i in changed_table:
+                            match i:
+                                case HUDValueType.Action:
+                                    self.game_state.player_remaining_action = changed_table[i][0]
+                                case HUDValueType.Attack:
+                                    self.game_state.player_attack = changed_table[i][0]
+                                case HUDValueType.Health:
+                                    self.game_state.player_health = changed_table[i][0]
+                                case HUDValueType.Money:
+                                    self.game_state.player_money = changed_table[i][0]
                         pyglet.clock.schedule_once(
                             func=lambda dt, states, duration: self.hud.set_states(states, duration), 
                             delay=invoke_after, states=changed_table, duration=2.0

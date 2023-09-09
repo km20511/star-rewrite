@@ -80,7 +80,7 @@ class PopupWindow:
 
         self.scene.push_handlers(on_scene_window_resized=on_resize)
 
-        # self.hide()
+        self.hide()
 
     @property
     def enabled(self) -> bool:

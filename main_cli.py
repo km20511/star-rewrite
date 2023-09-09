@@ -317,20 +317,25 @@ class Shell(cmd.Cmd):
                         if item is not None:
                             self.game_state.inventory.remove(item)
                     case DrawEventType.PlayerWon:
-                        print("승리! 목적을 달성했습니다!")
+                        print("승리! 우두머리를 처치했습니다!")
                         return True
                     case DrawEventType.PlayerLost:
-                        print("패배! some text goes here.")
+                        print(
+                            "패배! "
+                            + ("지금의 당신이 맞서기엔 적이 너무 강했습니다." 
+                            if event.target_id == 0 else "모든 미래를 찾아보아도 대책을 찾지 못했습니다.") 
+                            + f"\n소요 턴: {self.game_state.current_turn}"
+                        )
                         return True
                     case DrawEventType.PlayerStatChanged:
                         # match (PlayerStat(event.target_id)):
                         #     case PlayerStat.Money:
-                        delta: int = event.current - event.previous
-                        print(
-                            f"수치 변화: {PlayerStat(event.target_id).name},"
-                            f" {event.previous} -> {event.current}"
-                            f" ({'+' if delta > 0 else '-'}{abs(delta)})"
-                        )
+                        if (delta := event.current - event.previous) != 0:
+                            print(
+                                f"수치 변화: {PlayerStat(event.target_id).name},"
+                                f" {event.previous} -> {event.current}"
+                                f" ({'+' if delta > 0 else '-'}{abs(delta)})"
+                            )
             elif isinstance(event, ItemDrawData):
                 # 아이템 생성 이벤트.
                 print(f"아이템 생성됨: {event.name}")

@@ -1,0 +1,65 @@
+{
+    "level_name": "첫 조우",
+    "current_turn": 0,
+    "player_money": 10,
+    "player_health": 5,
+    "player_action": 3,
+    "player_remaining_action": 3,
+    "player_index": 0,
+    "player_attack":0,
+    "deck": [
+        {
+            "data_id": 305,
+            "is_front_face": false,
+            "instant_cost_modifier": 0
+        },
+        {
+            "data_id": 315,
+            "is_front_face": false,
+            "instant_cost_modifier": 0
+        },
+        {
+            "data_id": 203,
+            "is_front_face": false,
+            "instant_cost_modifier": 0
+        },
+        {
+            "data_id": 101,
+            "is_front_face": false,
+            "instant_cost_modifier": 0
+        },
+        {
+            "data_id": 220,
+            "is_front_face": false,
+            "instant_cost_modifier": 0
+        },
+        {
+            "data_id": 230,
+            "is_front_face": false,
+            "instant_cost_modifier": 0
+        },
+        {
+            "data_id": 225,
+            "is_front_face": false,
+            "instant_cost_modifier": 0
+        },
+        {
+            "data_id": 102,
+            "is_front_face": false,
+            "instant_cost_modifier": 0
+        },
+        {
+            "data_id": 101,
+            "is_front_face": false,
+            "instant_cost_modifier": 0
+        },
+        {
+            "data_id": 118,
+            "is_front_face": false,
+            "instant_cost_modifier": 0
+        }
+    ],
+    "inventory": [],
+    "item_usage_count":"Soooooon",
+    "remaining_effects":"NotImplemented"
+}

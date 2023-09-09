@@ -103,7 +103,7 @@ class InventoryUI(EventDispatcher):
         )
         self.tooltip_description = Label(
             font_name=ITEM_INDEX_FONT, font_size=TOOLTIP_CONTENT_FONT_SIZE*self.scene.scale_factor,
-            color=Color.white().tuple_256(),
+            color=Color.white().tuple_256(), anchor_y="bottom",
             width=TOOLTIP_MAX_WIDTH*self.scene.scale_factor, multiline=True,
             batch=batch, group=self.group_tooltip_content
         )

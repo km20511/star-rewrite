@@ -34,7 +34,49 @@
                     "event_type": "OnUsed"
                 }
             ]
+        },
+        {
+            "id": 13,
+            "name": "조성술: 재물운",
+            "sprite_name": "item_wooden_sword.png",
+            "description": "사용 시: 공개된 아이템 중 가장 먼 것을 앞으로 1칸 당겨옵니다.",
+            "effects": [
+                {
+                    "effect": "shift_cards(-1)",
+                    "target": "Deck",
+                    "query": "executer == target and this.card_data.type == CardType.Item and this.is_front_face",
+                    "order_by": {
+                        "method": "-abs(this.current_index - player_index)",
+                        "crop": "1"
+                    },
+                    "event_type": "OnUsed"
+                }
+            ]
+        },
+        {
+            "id": 15,
+            "name": "전사의 석상",
+            "sprite_name": "item_statue_of_warrior.png",
+            "description": "[소멸]\n사용 시: 공개된 적 카드 하나당 공격력을 3 얻고\n체력이 3 이하라면 체력을 6 얻습니다.",
+            "effects": [
+                {
+                    "effect": "modify_player_stat(PLAYER_ATTACK, amount = 3)",
+                    "target": "Deck",
+                    "query": "executer == target and this.card_data.type == CardType.Enemy and this.is_front_face",
+                    "event_type": "OnUsed"
+                },
+                {
+                    "effect": "modify_player_stat(PLAYER_HEALTH, amount = 6)",
+                    "target": "Executer",
+                    "query": "executer == target and get_player_stat(PLAYER_HEALTH) <= 3",
+                    "event_type": "OnUsed"
+                },
+                {
+                    "base_id": "DESTROY_ON_USED"
+                }
+            ]
         }
+        
 
     ]
 }
